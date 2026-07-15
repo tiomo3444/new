@@ -339,6 +339,113 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
   font-weight:900;
   margin-bottom:12px;
 }
+
+/* V9：穩定編輯、站點式撿貨表、主管工單 */
+.station-pick-card{
+  border:1px solid #D8CEBF;
+  border-left:6px solid #809671;
+  border-radius:14px;
+  background:#F7F3EC;
+  padding:14px;
+  margin-bottom:11px;
+}
+.station-pick-title{
+  font-size:17px;
+  font-weight:900;
+  color:#725C3A;
+  margin-bottom:8px;
+}
+.station-pick-item{
+  padding:7px 0;
+  border-top:1px dashed #D8CEBF;
+  line-height:1.5;
+}
+.station-pick-item:first-of-type{border-top:0}
+.pick-location{
+  display:block;
+  margin-top:2px;
+  color:#8A7B68;
+  font-size:12px;
+  font-weight:800;
+}
+.workorder-lock{
+  max-width:440px;
+  margin:30px auto;
+  padding:22px;
+  border-radius:18px;
+  background:#F7F3EC;
+  border:1px solid #D8CEBF;
+  text-align:center;
+}
+.workorder-toolbar{
+  display:flex;
+  gap:10px;
+  align-items:end;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.workorder-toolbar>div{min-width:190px}
+.workorder-card{
+  border:1px solid #D8CEBF;
+  border-radius:15px;
+  padding:14px;
+  margin-bottom:11px;
+  background:#F7F3EC;
+}
+.workorder-card.pending{border-left:6px solid #D2AB80}
+.workorder-card.issued{border-left:6px solid #809671}
+.workorder-amounts{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+.workorder-amount{
+  background:#E5D2B8;
+  border-radius:10px;
+  padding:9px;
+}
+.workorder-amount b{display:block;font-size:18px}
+.workorder-image{
+  max-width:220px;
+  max-height:180px;
+  object-fit:cover;
+  border-radius:10px;
+  border:1px solid #D8CEBF;
+  margin-top:8px;
+}
+.secure-badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#725C3A;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+}
+.confirmed-badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#DDE5D4;
+  color:#556B49;
+  font-size:11px;
+  font-weight:900;
+}
+.unconfirmed-badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#FFF1B8;
+  color:#725C3A;
+  font-size:11px;
+  font-weight:900;
+}
+@media(max-width:780px){
+  .workorder-amounts{grid-template-columns:1fr}
+  .workorder-toolbar>div{min-width:100%;width:100%}
+}
+
 @media(max-width:780px){
   .list-filter>div{min-width:100%;width:100%}
   .list-date-title{font-size:20px}
@@ -364,7 +471,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V8.1 實務操作優化版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V9 工單整合版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -438,7 +545,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div id="productPicker" class="product-picker"></div><div id="productDetails"></div>
 
 <div class="grid" style="margin-top:15px"><div class="full"><label>配送備註</label><textarea id="note" placeholder="樓層、電梯、停車、聯絡方式等"></textarea></div></div>
-<div class="actions"><button class="btn" id="saveBtn" type="submit">儲存配送安排</button><button class="btn alt" type="reset">清除</button><button class="btn alt" id="cancelEdit" type="button" style="display:none">取消編輯</button></div>
+<div class="actions"><button class="btn" id="saveBtn" type="submit">儲存配送安排</button><button class="btn alt" id="clearScheduleBtn" type="button">清除</button><button class="btn alt" id="cancelEdit" type="button" style="display:none">取消編輯</button></div>
 </form></div></section>
 
 <section id="calendar" class="panel"><div class="card"><div class="calendar-head"><button class="btn alt" id="prevMonth">‹ 上月</button><h2 id="monthTitle"></h2><button class="btn alt" id="nextMonth">下月 ›</button></div><div id="calendarGrid"></div><div id="mobileCalendar" class="mobile-calendar"></div><div class="help">第一組預設 11:00；硬性限制顯示指定時間；其餘顯示「待通知」。橘棕色代表中途疊貨。</div></div></section>
@@ -550,6 +657,65 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </div>
 </section>
 
+
+<section id="workorders" class="panel">
+  <div id="workorderLocked" class="workorder-lock">
+    <div class="secure-badge">主管專用</div>
+    <h2>物流工單</h2>
+    <p>此頁包含訂單金額與對帳資訊，請輸入主管密碼。</p>
+    <label>主管密碼</label>
+    <input id="workorderPin" type="password" autocomplete="current-password">
+    <button class="btn" id="workorderUnlockBtn" type="button" style="margin-top:12px">解鎖工單頁</button>
+  </div>
+
+  <div id="workorderContent" style="display:none">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between">
+        <div><span class="secure-badge">主管專用</span> <b>物流工單管理</b></div>
+        <button class="btn alt" id="workorderLockBtn" type="button">鎖定</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>新增／修改工單</h2>
+      <form id="workorderForm">
+        <input id="workorderId" type="hidden">
+        <div class="grid">
+          <div><label>工單日期 *</label><input id="workorderDate" type="date" required></div>
+          <div><label>工單狀態 *</label><select id="workorderStatus">
+            <option value="待補工單">待補工單</option>
+            <option value="已發工單">已發工單</option>
+          </select></div>
+          <div class="full"><label>關聯配送站點</label><select id="workorderDeliveryId"><option value="">不關聯配送資料</option></select></div>
+          <div class="full"><label>訂單編號 *</label><input id="workorderNumber" placeholder="例如：LTI115071501林俊甫" required></div>
+          <div><label>原本金額</label><input id="originalAmount" type="number" min="0" step="1" value="0"></div>
+          <div><label>調整後金額</label><input id="adjustedAmount" type="number" min="0" step="1" value="0"></div>
+          <div><label>主管姓名</label><input id="supervisorName" placeholder="主管姓名"></div>
+          <div><label>主管確認</label><select id="supervisorConfirmed">
+            <option value="false">尚未確認</option>
+            <option value="true">確認完成</option>
+          </select></div>
+          <div class="full"><label>工單圖片</label><input id="workorderImage" type="file" accept="image/*"></div>
+          <div class="full"><label>備註</label><textarea id="workorderNotes" placeholder="對帳、調整原因或其他說明"></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit">儲存工單</button>
+          <button class="btn alt" id="workorderResetBtn" type="button">清除</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="workorder-toolbar">
+        <div><label>統計月份</label><input id="workorderMonth" type="month"></div>
+        <button class="btn" id="workorderRefreshBtn" type="button">重新整理</button>
+      </div>
+      <div id="workorderMetrics" class="summary"></div>
+      <div id="workorderList" style="margin-top:14px"></div>
+    </div>
+  </div>
+</section>
+
 <section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
 <div class="grid3"><div><label>高雄倉庫</label><input value="高雄市仁武區成功路152號" readonly></div><div><label>台南倉庫</label><input value="台南市東區自由路一段8號" readonly></div><div><label>台南門市</label><input value="台南市東區崇善路762號" readonly></div></div>
 <div class="notice">本版本已完全移除 PIN 驗證，開啟公司網址即可使用。</div>
@@ -570,7 +736,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 <script>
 const $=s=>document.querySelector(s);
-let products=[],locations=[],rows=[],blocks=[],routeEvents=[],routePlans=[],currentMonth=new Date(),selectedMobileDate="";
+let products=[],locations=[],rows=[],blocks=[],routeEvents=[],routePlans=[],workorders=[],currentMonth=new Date(),selectedMobileDate="";
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const headers=()=>({'Content-Type':'application/json'});
 const localDate=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -624,11 +790,25 @@ function collectItems(){
   });
 }
 function resetForm(){
-  $('#editingId').value='';$('#formTitle').textContent='新增配送安排';$('#saveBtn').textContent='儲存配送安排';$('#cancelEdit').style.display='none';$('#editModeBanner').style.display='none';
-  $('#scheduleForm').reset();$('#date').value=localDate();$('#serviceMinutes').value=30;$('#taskNew').checked=true;$('#taskMoving').checked=false;$('#taskRental').checked=false;syncTime();syncTaskPanels();initProductPicker();
+  const form=$('#scheduleForm');
+  if(form)HTMLFormElement.prototype.reset.call(form);
+  $('#editingId').value='';
+  $('#formTitle').textContent='新增配送安排';
+  $('#saveBtn').textContent='儲存配送安排';
+  $('#cancelEdit').style.display='none';
+  $('#editModeBanner').style.display='none';
+  $('#date').value=localDate();
+  $('#serviceMinutes').value=30;
+  $('#taskNew').checked=true;
+  $('#taskMoving').checked=false;
+  $('#taskRental').checked=false;
+  syncTime();
+  syncTaskPanels();
+  initProductPicker();
+  updateDateBlockWarning();
 }
-$('#scheduleForm').onreset=()=>setTimeout(resetForm,0);
 $('#cancelEdit').onclick=resetForm;
+$('#clearScheduleBtn').onclick=resetForm;
 
 function syncTaskPanels(){
   $('#movingPanel').classList.toggle('show',$('#taskMoving').checked);
@@ -886,6 +1066,157 @@ function dateHasOtherMorning(date,excludeId=''){
 }
 
 function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已取消').sort((a,b)=>(a.delivery_order||99)-(b.delivery_order||99)||String(a.created_at).localeCompare(String(b.created_at)))}
+
+function workorderPin(){return localStorage.getItem('workorderPin')||''}
+function workorderHeaders(){return {'Content-Type':'application/json','x-workorder-pin':workorderPin()}}
+async function workorderApi(url,opt={}){
+  const r=await fetch(url,{...opt,headers:{...workorderHeaders(),...(opt.headers||{})}});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
+  return d;
+}
+function currency(n){return new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(Number(n||0))}
+function resetWorkorderForm(){
+  const form=$('#workorderForm');
+  if(form)HTMLFormElement.prototype.reset.call(form);
+  $('#workorderId').value='';
+  $('#workorderDate').value=localDate();
+  $('#originalAmount').value=0;
+  $('#adjustedAmount').value=0;
+  $('#supervisorConfirmed').value='false';
+}
+function populateWorkorderDeliveries(){
+  const month=$('#workorderMonth')?.value||localDate().slice(0,7);
+  const options=rows
+    .filter(r=>r.delivery_date.startsWith(month))
+    .map(r=>`<option value="${r.id}">${esc(r.delivery_date)}｜第${r.delivery_order||'-'}站｜${esc(displayName(r))}</option>`)
+    .join('');
+  $('#workorderDeliveryId').innerHTML='<option value="">不關聯配送資料</option>'+options;
+}
+async function loadWorkorders(){
+  const month=$('#workorderMonth').value||localDate().slice(0,7);
+  workorders=await workorderApi(`/api/v9/workorders?month=${encodeURIComponent(month)}`);
+  renderWorkorders();
+}
+function renderWorkorders(){
+  const originalTotal=workorders.reduce((s,w)=>s+Number(w.original_amount||0),0);
+  const adjustedTotal=workorders.reduce((s,w)=>s+Number(w.adjusted_amount||0),0);
+  const confirmedTotal=workorders.filter(w=>w.supervisor_confirmed).reduce((s,w)=>s+Number(w.adjusted_amount||0),0);
+  $('#workorderMetrics').innerHTML=[
+    ['工單數',workorders.length],
+    ['原價合計',currency(originalTotal)],
+    ['調整後合計',currency(adjustedTotal)],
+    ['已確認合計',currency(confirmedTotal)]
+  ].map(x=>`<div class="metric">${x[0]}<b style="font-size:18px">${x[1]}</b></div>`).join('');
+
+  $('#workorderList').innerHTML=workorders.length?workorders.map(w=>`<div class="workorder-card ${w.work_order_status==='已發工單'?'issued':'pending'}">
+    <div class="actions" style="justify-content:space-between">
+      <div><b>${esc(w.work_order_date)}｜${esc(w.order_number)}</b></div>
+      <div>${w.work_order_status==='已發工單'?'<span class="confirmed-badge">已發工單</span>':'<span class="unconfirmed-badge">待補工單</span>'}</div>
+    </div>
+    <div style="margin-top:7px">${w.delivery_label?esc(w.delivery_label):'未關聯配送站點'}</div>
+    <div class="workorder-amounts">
+      <div class="workorder-amount">原本金額<b>${currency(w.original_amount)}</b></div>
+      <div class="workorder-amount">調整後<b>${currency(w.adjusted_amount)}</b></div>
+      <div class="workorder-amount">主管確認<b>${w.supervisor_confirmed?'✓ 已確認':'尚未確認'}</b></div>
+    </div>
+    <div style="margin-top:8px">主管：${esc(w.supervisor_name||'未填')}</div>
+    ${w.notes?`<div class="delivery-note">📝 ${esc(w.notes)}</div>`:''}
+    ${w.image_url?`<img class="workorder-image" src="${esc(w.image_url)}" alt="工單圖片">`:''}
+    <div class="actions" style="margin-top:10px">
+      <button class="btn alt" onclick="editWorkorder('${w.id}')">編輯</button>
+      <button class="btn danger" onclick="deleteWorkorder('${w.id}')">刪除</button>
+    </div>
+  </div>`).join(''):'此月份尚無工單';
+}
+window.editWorkorder=id=>{
+  const w=workorders.find(x=>x.id===id);
+  if(!w)return;
+  $('#workorderId').value=w.id;
+  $('#workorderDate').value=w.work_order_date;
+  $('#workorderStatus').value=w.work_order_status;
+  $('#workorderDeliveryId').value=w.delivery_id||'';
+  $('#workorderNumber').value=w.order_number;
+  $('#originalAmount').value=w.original_amount||0;
+  $('#adjustedAmount').value=w.adjusted_amount||0;
+  $('#supervisorName').value=w.supervisor_name||'';
+  $('#supervisorConfirmed').value=String(!!w.supervisor_confirmed);
+  $('#workorderNotes').value=w.notes||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+window.deleteWorkorder=async id=>{
+  if(!confirm('確定刪除這筆工單？'))return;
+  try{
+    await workorderApi('/api/v9/workorders',{method:'DELETE',body:JSON.stringify({id})});
+    toast('已刪除工單');
+    await loadWorkorders();
+  }catch(e){toast(e.message)}
+};
+$('#workorderUnlockBtn').onclick=async()=>{
+  localStorage.setItem('workorderPin',$('#workorderPin').value);
+  try{
+    await loadWorkorders();
+    $('#workorderLocked').style.display='none';
+    $('#workorderContent').style.display='block';
+    populateWorkorderDeliveries();
+    toast('工單頁已解鎖');
+  }catch(e){
+    localStorage.removeItem('workorderPin');
+    toast(e.message);
+  }
+};
+$('#workorderLockBtn').onclick=()=>{
+  localStorage.removeItem('workorderPin');
+  $('#workorderContent').style.display='none';
+  $('#workorderLocked').style.display='block';
+  $('#workorderPin').value='';
+};
+$('#workorderRefreshBtn').onclick=()=>loadWorkorders().catch(e=>toast(e.message));
+$('#workorderMonth').onchange=()=>{
+  populateWorkorderDeliveries();
+  loadWorkorders().catch(e=>toast(e.message));
+};
+$('#workorderResetBtn').onclick=resetWorkorderForm;
+$('#workorderForm').onsubmit=async e=>{
+  e.preventDefault();
+  try{
+    let imageUrl=null;
+    const file=$('#workorderImage').files[0];
+    if(file){
+      const formData=new FormData();
+      formData.append('file',file);
+      const upload=await fetch('/api/v9/workorder-image',{
+        method:'POST',
+        headers:{'x-workorder-pin':workorderPin()},
+        body:formData
+      });
+      const uploadData=await upload.json().catch(()=>({}));
+      if(!upload.ok)throw new Error(uploadData.error||'圖片上傳失敗');
+      imageUrl=uploadData.url;
+    }
+    const body={
+      id:$('#workorderId').value||undefined,
+      work_order_date:$('#workorderDate').value,
+      work_order_status:$('#workorderStatus').value,
+      delivery_id:$('#workorderDeliveryId').value||null,
+      order_number:$('#workorderNumber').value.trim(),
+      original_amount:Number($('#originalAmount').value||0),
+      adjusted_amount:Number($('#adjustedAmount').value||0),
+      supervisor_name:$('#supervisorName').value.trim()||null,
+      supervisor_confirmed:$('#supervisorConfirmed').value==='true',
+      notes:$('#workorderNotes').value.trim()||null,
+      image_url:imageUrl
+    };
+    await workorderApi('/api/v9/workorders',{
+      method:body.id?'PUT':'POST',
+      body:JSON.stringify(body)
+    });
+    toast(body.id?'工單已更新':'工單已新增');
+    resetWorkorderForm();
+    await loadWorkorders();
+  }catch(e){toast(e.message)}
+};
+
 function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();renderRoutePlan();renderDriverMode();updateDateBlockWarning()}
 
 $('#scheduleForm').onsubmit=async e=>{
@@ -1150,9 +1481,23 @@ window.editRow=id=>{
 };
 
 function renderPickup(){
-  const ds=$('#pickupDate').value||localDate(),arr=dayRows(ds),groups={};
-  arr.forEach((r,idx)=>(r.items||[]).forEach(i=>{const key=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');(groups[key]??=[]).push({...i,customer_name:displayName(r),order:r.delivery_order||idx+1})}));
-  $('#pickupContent').innerHTML=Object.keys(groups).length?Object.entries(groups).map(([loc,items])=>`<div class="pickup-group"><div class="pickup-title">${esc(loc)}</div>${items.map(i=>`<div class="checkline"><input type="checkbox" ${i.picked?'checked':''} disabled><div><b>第 ${i.order} 站｜${esc(i.customer_name)}</b>：${esc(i.product_name)} × ${i.quantity}${i.item_notes?`｜${esc(i.item_notes)}`:''}</div></div>`).join('')}</div>`).join(''):'此日期尚無撿貨資料';
+  const ds=$('#pickupDate').value||localDate();
+  const arr=dayRows(ds);
+  $('#pickupContent').innerHTML=arr.length?arr.map((r,idx)=>{
+    const items=(r.items||[]).map(i=>{
+      const location=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');
+      const detail=i.item_notes?`｜${i.item_notes}`:'';
+      return `<div class="station-pick-item">
+        <b>${esc(i.product_name)} × ${i.quantity}</b>${detail?esc(detail):''}
+        <span class="pick-location">撿貨：${esc(location)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="station-pick-card">
+      <div class="station-pick-title">第 ${r.delivery_order||idx+1} 站｜${esc(displayName(r))}｜${esc(districtOf(r.delivery_address))}</div>
+      ${items||'<div>無商品資料</div>'}
+      ${r.notes?`<div class="delivery-note">📝 ${esc(r.notes)}</div>`:''}
+    </div>`;
+  }).join(''):'此日期尚無撿貨資料';
 }
 $('#refreshPickup').onclick=renderPickup;$('#pickupDate').onchange=renderPickup;
 
@@ -1387,8 +1732,8 @@ $('#driverDate').onchange=renderDriverMode;
 $('#planBtn').onclick=renderRoutePlan;
 $('#planDate').onchange=()=>{syncFirstArrivalInput();renderRoutePlan()};
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan'){syncFirstArrivalInput();renderRoutePlan()}if(b.dataset.tab==='driver')renderDriverMode();if(b.dataset.tab==='list')renderList()});
-$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=localDate();syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan'){syncFirstArrivalInput();renderRoutePlan()}if(b.dataset.tab==='driver')renderDriverMode();if(b.dataset.tab==='list')renderList();if(b.dataset.tab==='workorders'){populateWorkorderDeliveries();if(workorderPin()){loadWorkorders().then(()=>{$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block'}).catch(()=>{})}}});
+$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=$('#workorderDate').value=localDate();$('#workorderMonth').value=localDate().slice(0,7);syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
 </script>

@@ -39,3 +39,13 @@
   from = "/api/v7/route-plans"
   to = "/.netlify/functions/platform_route_plans"
   status = 200
+
+[[redirects]]
+  from = "/api/v9/workorders"
+  to = "/.netlify/functions/platform_workorders"
+  status = 200
+
+[[redirects]]
+  from = "/api/v9/workorder-image"
+  to = "/.netlify/functions/platform_workorder_image"
+  status = 200
