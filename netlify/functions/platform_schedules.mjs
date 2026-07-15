@@ -169,7 +169,7 @@ export default async req => {
     const body = await req.json();
 
     if (req.method === "POST") {
-      for (const field of ["delivery_date", "customer_name", "delivery_address", "sales_name"]) {
+      for (const field of ["delivery_date", "customer_name", "delivery_address", "order_number"]) {
         if (!String(body[field] || "").trim()) return response({ error: `缺少欄位：${field}` }, 400);
       }
       if (!Array.isArray(body.items) || !body.items.length) {
@@ -179,7 +179,7 @@ export default async req => {
       await ensureMorningAvailable(db, body);
       await ensureNotBlocked(db, body);
       const customerId = await insertCustomer(db, body.customer_name, body.customer_phone, body.delivery_address);
-      const staffId = await upsertStaff(db, body.sales_name);
+      const staffId = null;
       const order = isMorningRequest(body)
         ? await assignMorningFirst(db, body.delivery_date)
         : await nextOrder(db, body.delivery_date);
@@ -190,7 +190,9 @@ export default async req => {
         customer_phone_snapshot: body.customer_phone || null,
         delivery_address_snapshot: body.delivery_address,
         sales_staff_id: staffId,
-        sales_name_snapshot: body.sales_name,
+        sales_name_snapshot: null,
+        order_number: body.order_number,
+        work_order_sent: !!body.work_order_sent,
         delivery_date: body.delivery_date,
         delivery_order: order,
         requested_period: body.requested_period || "無指定",
@@ -227,7 +229,7 @@ export default async req => {
 
       await ensureMorningAvailable(db, body, body.id);
       await ensureNotBlocked(db, body, body.id);
-      const staffId = await upsertStaff(db, body.sales_name);
+      const staffId = null;
 
       let order;
       if (isMorningRequest(body)) {
@@ -251,7 +253,9 @@ export default async req => {
         customer_phone_snapshot: body.customer_phone || null,
         delivery_address_snapshot: body.delivery_address,
         sales_staff_id: staffId,
-        sales_name_snapshot: body.sales_name,
+        sales_name_snapshot: null,
+        order_number: body.order_number,
+        work_order_sent: !!body.work_order_sent,
         delivery_date: body.delivery_date,
         delivery_order: order,
         requested_period: body.requested_period || "無指定",
@@ -293,15 +297,25 @@ export default async req => {
 
     if (req.method === "PATCH") {
       if (!body.id) return response({ error: "缺少 id" }, 400);
-      const allowed = ["待確認", "已確認", "需改期", "配送中", "已完成", "已取消"];
-      if (!allowed.includes(body.status)) return response({ error: "無效的配送狀態" }, 400);
-
-      const { data: updated, error } = await db
-        .from("deliveries")
-        .update({ status: body.status })
-        .eq("id", body.id)
-        .select("id,status")
-        .single();
+      const { data: current, error: currentError } = await db.from("deliveries").select("id,status,delivery_date").eq("id", body.id).single();
+      if (currentError) throw currentError;
+      const update = {};
+      if (Object.prototype.hasOwnProperty.call(body,"estimated_arrival")) update.estimated_arrival = body.estimated_arrival || null;
+      if (body.status) {
+        if (body.source === "list") {
+          if (current.status === "已完成") return response({ error: "已完成配送只能由司機模式還原" }, 409);
+          if (!["待確認","已確認","已取消"].includes(body.status)) return response({ error: "配送清單狀態無效" }, 400);
+        } else if (body.source === "driver") {
+          if (!["已完成","已確認"].includes(body.status)) return response({ error: "司機模式狀態無效" }, 400);
+          if (body.status === "已完成") {
+            const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
+            if (current.delivery_date > today) return response({ error: "配送日期尚未到，不能提前完成" }, 400);
+          }
+        } else return response({ error: "請從指定頁面更新狀態" }, 400);
+        update.status = body.status;
+      }
+      if (!Object.keys(update).length) return response({ error: "沒有可更新的欄位" }, 400);
+      const { data: updated, error } = await db.from("deliveries").update(update).eq("id", body.id).select("id,status,estimated_arrival").single();
       if (error) throw error;
       return response({ ok: true, delivery: updated });
     }

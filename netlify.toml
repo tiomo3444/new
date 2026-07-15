@@ -49,3 +49,8 @@
   from = "/api/v9/workorder-image"
   to = "/.netlify/functions/platform_workorder_image"
   status = 200
+
+[[redirects]]
+  from = "/api/v10/management"
+  to = "/.netlify/functions/platform_management"
+  status = 200

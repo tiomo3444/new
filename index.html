@@ -441,6 +441,13 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
   font-size:11px;
   font-weight:900;
 }
+
+.missing-workorder{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#FFD85A;color:#725C3A;border:1px solid #D89A00;font-size:10px;font-weight:900}
+.completed-row td{background:#E8F0E2!important}.completed-label{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:#725C3A;color:#fff;font-size:11px;font-weight:900}
+.manual-time{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.manual-time input{width:110px}
+.management-row{display:grid;grid-template-columns:150px minmax(220px,1fr) 150px 150px 130px;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #D8CEBF}.management-row.header{font-weight:900;background:#E5D2B8;border-radius:10px}.management-order{font-weight:900;color:#725C3A;word-break:break-all}.order-number{font-weight:900;color:#725C3A;word-break:break-all}
+@media(max-width:900px){.management-row{grid-template-columns:1fr}.management-row.header{display:none}}
+
 @media(max-width:780px){
   .workorder-amounts{grid-template-columns:1fr}
   .workorder-toolbar>div{min-width:100%;width:100%}
@@ -471,19 +478,19 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V9.1 工單頁修正版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V10 流程最佳化版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
 <button class="tab" data-tab="form">新增配送</button>
-<button class="tab" data-tab="calendar">月曆排程</button>
-<button class="tab" data-tab="pickup">物流撿貨表</button>
+<button class="tab" data-tab="calendar">配送月曆</button>
 <button class="tab" data-tab="list">配送清單</button>
+<button class="tab" data-tab="pickup">撿貨表</button>
 <button class="tab" data-tab="routePlan">每日路線</button>
 <button class="tab" data-tab="driver">司機模式</button>
-<button class="tab" data-tab="blocks">請勿安排配送</button>
-<button class="tab" data-tab="workorders">物流工單（主管）</button>
-<button class="tab" data-tab="settings">固定地點</button>
+<button class="tab" data-tab="blocks">禁排設定</button>
+<button class="tab" data-tab="workorders">管理中心</button>
+<button class="tab" data-tab="settings">系統設定</button>
 </div>
 
 <section id="dashboard" class="panel active">
@@ -502,12 +509,12 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div><label>限制強度</label><select id="constraintType"><option value="優先條件">優先條件（盡量符合）</option><option value="硬性限制">硬性限制（必須符合）</option></select></div>
 <div id="earliestWrap" style="display:none"><label>最早可抵達</label><input id="earliestTime" type="time"></div>
 <div id="latestWrap" style="display:none"><label>最晚可抵達</label><input id="latestTime" type="time"></div>
-<div><label>客戶姓名 *</label><input id="customerName" placeholder="例如：Ti陳小明" required></div>
-<div><label>業務姓名 *</label><input id="salesperson" required></div>
+<div><label>客戶姓名 *</label><input id="customerName" placeholder="例如：林俊甫" required></div>
+<div><label>訂單編號 *</label><input id="orderNumber" placeholder="例如：LTi115071601林俊甫" required></div>
 <div class="full"><label>配送地址 *</label><input id="address" placeholder="請填寫完整地址" required></div>
 <div><label>客戶電話</label><input id="phone" type="tel"></div>
 <div><label>預估卸貨及組裝所需時間（分鐘）*</label><input id="serviceMinutes" type="number" min="0" step="5" value="30" required><div class="help">系統會把這個時間加到抵達時間，推算下一站。</div></div>
-<div><label>狀態</label><select id="status"><option>待確認</option><option>已確認</option><option>需改期</option><option>配送中</option><option>已完成</option><option>已取消</option></select></div>
+<div><label>狀態</label><select id="status"><option>待確認</option><option>已確認</option><option>已取消</option></select></div>
 </div>
 
 
@@ -545,7 +552,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <h3>配送商品</h3><div class="help">勾選後才會顯示數量、撿貨位置與備註。</div>
 <div id="productPicker" class="product-picker"></div><div id="productDetails"></div>
 
-<div class="grid" style="margin-top:15px"><div class="full"><label>配送備註</label><textarea id="note" placeholder="樓層、電梯、停車、聯絡方式等"></textarea></div></div>
+<div class="grid" style="margin-top:15px"><div><label>工單狀態</label><label class="task-check"><input id="workOrderSent" type="checkbox"> 工單已發</label></div><div class="full"><label>配送備註</label><textarea id="note" placeholder="樓層、電梯、停車、聯絡方式等"></textarea></div></div>
 <div class="actions"><button class="btn" id="saveBtn" type="submit">儲存配送安排</button><button class="btn alt" id="clearScheduleBtn" type="button">清除</button><button class="btn alt" id="cancelEdit" type="button" style="display:none">取消編輯</button></div>
 </form></div></section>
 
@@ -558,7 +565,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
   <div class="list-filter">
     <div><label>查看配送日期</label><input id="listDate" type="date"></div>
     <button class="btn" id="listTodayBtn" type="button">今天</button>
-    <button class="btn alt" id="listAllBtn" type="button">顯示全部</button>
+    <button class="btn alt" id="listAllBtn" type="button">顯示全部</button><button class="btn alt" id="listMissingWorkorderBtn" type="button">待補工單</button>
   </div>
   <div id="listDateTitle" class="list-date-title"></div>
   <div class="summary" id="metrics"></div>
@@ -660,61 +667,8 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 
 <section id="workorders" class="panel">
-  <div id="workorderLocked" class="workorder-lock">
-    <div class="secure-badge">主管專用</div>
-    <h2>物流工單</h2>
-    <p>此頁包含訂單金額與對帳資訊，請輸入主管密碼。</p>
-    <label>主管密碼</label>
-    <input id="workorderPin" type="password" autocomplete="current-password">
-    <button class="btn" id="workorderUnlockBtn" type="button" style="margin-top:12px">解鎖工單頁</button>
-  </div>
-
-  <div id="workorderContent" style="display:none">
-    <div class="card">
-      <div class="actions" style="justify-content:space-between">
-        <div><span class="secure-badge">主管專用</span> <b>物流工單管理</b></div>
-        <button class="btn alt" id="workorderLockBtn" type="button">鎖定</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>新增／修改工單</h2>
-      <form id="workorderForm">
-        <input id="workorderId" type="hidden">
-        <div class="grid">
-          <div><label>工單日期 *</label><input id="workorderDate" type="date" required></div>
-          <div><label>工單狀態 *</label><select id="workorderStatus">
-            <option value="待補工單">待補工單</option>
-            <option value="已發工單">已發工單</option>
-          </select></div>
-          <div class="full"><label>關聯配送站點</label><select id="workorderDeliveryId"><option value="">不關聯配送資料</option></select></div>
-          <div class="full"><label>訂單編號 *</label><input id="workorderNumber" placeholder="例如：LTI115071501林俊甫" required></div>
-          <div><label>原本金額</label><input id="originalAmount" type="number" min="0" step="1" value="0"></div>
-          <div><label>調整後金額</label><input id="adjustedAmount" type="number" min="0" step="1" value="0"></div>
-          <div><label>主管姓名</label><input id="supervisorName" placeholder="主管姓名"></div>
-          <div><label>主管確認</label><select id="supervisorConfirmed">
-            <option value="false">尚未確認</option>
-            <option value="true">確認完成</option>
-          </select></div>
-          <div class="full"><label>工單圖片</label><input id="workorderImage" type="file" accept="image/*"></div>
-          <div class="full"><label>備註</label><textarea id="workorderNotes" placeholder="對帳、調整原因或其他說明"></textarea></div>
-        </div>
-        <div class="actions">
-          <button class="btn" type="submit">儲存工單</button>
-          <button class="btn alt" id="workorderResetBtn" type="button">清除</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <div class="workorder-toolbar">
-        <div><label>統計月份</label><input id="workorderMonth" type="month"></div>
-        <button class="btn" id="workorderRefreshBtn" type="button">重新整理</button>
-      </div>
-      <div id="workorderMetrics" class="summary"></div>
-      <div id="workorderList" style="margin-top:14px"></div>
-    </div>
-  </div>
+<div id="workorderLocked" class="workorder-lock"><div class="secure-badge">特定人員專用</div><h2>管理中心</h2><p>此頁包含訂單金額與每月出貨統計，請輸入管理密碼。</p><label>管理密碼</label><input id="workorderPin" type="password"><button class="btn" id="workorderUnlockBtn" type="button" style="margin-top:12px">解鎖管理中心</button></div>
+<div id="workorderContent" style="display:none"><div class="card"><div class="actions" style="justify-content:space-between"><div><span class="secure-badge">特定人員專用</span> <b>每月出貨對帳</b></div><button class="btn alt" id="workorderLockBtn" type="button">鎖定</button></div></div><div class="card"><div class="workorder-toolbar"><div><label>統計月份</label><input id="workorderMonth" type="month"></div><button class="btn" id="workorderRefreshBtn" type="button">重新整理</button></div><div id="workorderMetrics" class="summary"></div><div id="workorderList" style="margin-top:14px"></div></div></div>
 </section>
 
 <section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
@@ -919,6 +873,7 @@ function noteButton(r){
 function completedMark(r){
   return r?.status==='已完成'?'<span class="calendar-done">✓ 完成</span>':'';
 }
+function missingWorkorderMark(r){return r?.work_order_sent?'':'<span class="missing-workorder">⚠ 補工單</span>';}
 function isFutureDate(date){
   return String(date)>localDate();
 }
@@ -931,7 +886,13 @@ function districtOf(address){
   const m2=a.match(/([一-鿿]{1,5}(?:區|鄉|鎮|市))/);
   return m2?m2[1]:'未辨識地區';
 }
-function displayName(r){return `${r.sales_name||''} ${r.customer_name||''}`.trim()}
+function displayName(r){
+  const order=String(r.order_number||'').trim();
+  const prefix=(order.match(/^[A-Za-z]{3}/)||[''])[0];
+  const orderName=(order.match(/[\u4e00-\u9fff·]+$/)||[''])[0];
+  const customer=String(r.customer_name||'').replace(/^[A-Za-z]{2,3}\s*/,'').trim();
+  return `${prefix}${orderName||customer}`.trim()||customer||order;
+}
 
 function routeEventsForDate(date){
   return routeEvents
@@ -1070,153 +1031,15 @@ function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已
 
 function workorderPin(){return localStorage.getItem('workorderPin')||''}
 function workorderHeaders(){return {'Content-Type':'application/json','x-workorder-pin':workorderPin()}}
-async function workorderApi(url,opt={}){
-  const r=await fetch(url,{...opt,headers:{...workorderHeaders(),...(opt.headers||{})}});
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
-  return d;
-}
+async function workorderApi(url,opt={}){const r=await fetch(url,{...opt,headers:{...workorderHeaders(),...(opt.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
 function currency(n){return new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(Number(n||0))}
-function resetWorkorderForm(){
-  const form=$('#workorderForm');
-  if(form)HTMLFormElement.prototype.reset.call(form);
-  $('#workorderId').value='';
-  $('#workorderDate').value=localDate();
-  $('#originalAmount').value=0;
-  $('#adjustedAmount').value=0;
-  $('#supervisorConfirmed').value='false';
-}
-function populateWorkorderDeliveries(){
-  const month=$('#workorderMonth')?.value||localDate().slice(0,7);
-  const options=rows
-    .filter(r=>r.delivery_date.startsWith(month))
-    .map(r=>`<option value="${r.id}">${esc(r.delivery_date)}｜第${r.delivery_order||'-'}站｜${esc(displayName(r))}</option>`)
-    .join('');
-  $('#workorderDeliveryId').innerHTML='<option value="">不關聯配送資料</option>'+options;
-}
-async function loadWorkorders(){
-  const month=$('#workorderMonth').value||localDate().slice(0,7);
-  workorders=await workorderApi(`/api/v9/workorders?month=${encodeURIComponent(month)}`);
-  renderWorkorders();
-}
-function renderWorkorders(){
-  const originalTotal=workorders.reduce((s,w)=>s+Number(w.original_amount||0),0);
-  const adjustedTotal=workorders.reduce((s,w)=>s+Number(w.adjusted_amount||0),0);
-  const confirmedTotal=workorders.filter(w=>w.supervisor_confirmed).reduce((s,w)=>s+Number(w.adjusted_amount||0),0);
-  $('#workorderMetrics').innerHTML=[
-    ['工單數',workorders.length],
-    ['原價合計',currency(originalTotal)],
-    ['調整後合計',currency(adjustedTotal)],
-    ['已確認合計',currency(confirmedTotal)]
-  ].map(x=>`<div class="metric">${x[0]}<b style="font-size:18px">${x[1]}</b></div>`).join('');
-
-  $('#workorderList').innerHTML=workorders.length?workorders.map(w=>`<div class="workorder-card ${w.work_order_status==='已發工單'?'issued':'pending'}">
-    <div class="actions" style="justify-content:space-between">
-      <div><b>${esc(w.work_order_date)}｜${esc(w.order_number)}</b></div>
-      <div>${w.work_order_status==='已發工單'?'<span class="confirmed-badge">已發工單</span>':'<span class="unconfirmed-badge">待補工單</span>'}</div>
-    </div>
-    <div style="margin-top:7px">${w.delivery_label?esc(w.delivery_label):'未關聯配送站點'}</div>
-    <div class="workorder-amounts">
-      <div class="workorder-amount">原本金額<b>${currency(w.original_amount)}</b></div>
-      <div class="workorder-amount">調整後<b>${currency(w.adjusted_amount)}</b></div>
-      <div class="workorder-amount">主管確認<b>${w.supervisor_confirmed?'✓ 已確認':'尚未確認'}</b></div>
-    </div>
-    <div style="margin-top:8px">主管：${esc(w.supervisor_name||'未填')}</div>
-    ${w.notes?`<div class="delivery-note">📝 ${esc(w.notes)}</div>`:''}
-    ${w.image_url?`<img class="workorder-image" src="${esc(w.image_url)}" alt="工單圖片">`:''}
-    <div class="actions" style="margin-top:10px">
-      <button class="btn alt" onclick="editWorkorder('${w.id}')">編輯</button>
-      <button class="btn danger" onclick="deleteWorkorder('${w.id}')">刪除</button>
-    </div>
-  </div>`).join(''):'此月份尚無工單';
-}
-window.editWorkorder=id=>{
-  const w=workorders.find(x=>x.id===id);
-  if(!w)return;
-  $('#workorderId').value=w.id;
-  $('#workorderDate').value=w.work_order_date;
-  $('#workorderStatus').value=w.work_order_status;
-  $('#workorderDeliveryId').value=w.delivery_id||'';
-  $('#workorderNumber').value=w.order_number;
-  $('#originalAmount').value=w.original_amount||0;
-  $('#adjustedAmount').value=w.adjusted_amount||0;
-  $('#supervisorName').value=w.supervisor_name||'';
-  $('#supervisorConfirmed').value=String(!!w.supervisor_confirmed);
-  $('#workorderNotes').value=w.notes||'';
-  window.scrollTo({top:0,behavior:'smooth'});
-};
-window.deleteWorkorder=async id=>{
-  if(!confirm('確定刪除這筆工單？'))return;
-  try{
-    await workorderApi('/api/v9/workorders',{method:'DELETE',body:JSON.stringify({id})});
-    toast('已刪除工單');
-    await loadWorkorders();
-  }catch(e){toast(e.message)}
-};
-$('#workorderUnlockBtn').onclick=async()=>{
-  localStorage.setItem('workorderPin',$('#workorderPin').value);
-  try{
-    await loadWorkorders();
-    $('#workorderLocked').style.display='none';
-    $('#workorderContent').style.display='block';
-    populateWorkorderDeliveries();
-    toast('工單頁已解鎖');
-  }catch(e){
-    localStorage.removeItem('workorderPin');
-    toast(e.message);
-  }
-};
-$('#workorderLockBtn').onclick=()=>{
-  localStorage.removeItem('workorderPin');
-  $('#workorderContent').style.display='none';
-  $('#workorderLocked').style.display='block';
-  $('#workorderPin').value='';
-};
-$('#workorderRefreshBtn').onclick=()=>loadWorkorders().catch(e=>toast(e.message));
-$('#workorderMonth').onchange=()=>{
-  populateWorkorderDeliveries();
-  loadWorkorders().catch(e=>toast(e.message));
-};
-$('#workorderResetBtn').onclick=resetWorkorderForm;
-$('#workorderForm').onsubmit=async e=>{
-  e.preventDefault();
-  try{
-    let imageUrl=null;
-    const file=$('#workorderImage').files[0];
-    if(file){
-      const formData=new FormData();
-      formData.append('file',file);
-      const upload=await fetch('/api/v9/workorder-image',{
-        method:'POST',
-        headers:{'x-workorder-pin':workorderPin()},
-        body:formData
-      });
-      const uploadData=await upload.json().catch(()=>({}));
-      if(!upload.ok)throw new Error(uploadData.error||'圖片上傳失敗');
-      imageUrl=uploadData.url;
-    }
-    const body={
-      id:$('#workorderId').value||undefined,
-      work_order_date:$('#workorderDate').value,
-      work_order_status:$('#workorderStatus').value,
-      delivery_id:$('#workorderDeliveryId').value||null,
-      order_number:$('#workorderNumber').value.trim(),
-      original_amount:Number($('#originalAmount').value||0),
-      adjusted_amount:Number($('#adjustedAmount').value||0),
-      supervisor_name:$('#supervisorName').value.trim()||null,
-      supervisor_confirmed:$('#supervisorConfirmed').value==='true',
-      notes:$('#workorderNotes').value.trim()||null,
-      image_url:imageUrl
-    };
-    await workorderApi('/api/v9/workorders',{
-      method:body.id?'PUT':'POST',
-      body:JSON.stringify(body)
-    });
-    toast(body.id?'工單已更新':'工單已新增');
-    resetWorkorderForm();
-    await loadWorkorders();
-  }catch(e){toast(e.message)}
-};
+async function loadWorkorders(){const month=$('#workorderMonth').value||localDate().slice(0,7);workorders=await workorderApi(`/api/v10/management?month=${encodeURIComponent(month)}`);renderWorkorders()}
+function renderWorkorders(){const o=workorders.reduce((s,w)=>s+Number(w.original_amount||0),0),a=workorders.reduce((s,w)=>s+Number(w.adjusted_amount||0),0),r=workorders.filter(w=>w.reconciled).length;$('#workorderMetrics').innerHTML=[['已完成訂單',workorders.length],['調整前總額',currency(o)],['88折後總額',currency(a)],['已對帳',r]].map(x=>`<div class="metric">${x[0]}<b style="font-size:18px">${x[1]}</b></div>`).join('');$('#workorderList').innerHTML=`<div class="management-row header"><div>配送日期</div><div>訂單編號</div><div>調整前</div><div>調整後</div><div>對帳</div></div>`+(workorders.length?workorders.map(w=>`<div class="management-row"><div><b>${esc(w.delivery_date)}</b></div><div class="management-order">${esc(w.order_number||'未填訂單編號')}</div><div><input type="number" min="0" value="${Number(w.original_amount||0)}" id="orig-${w.delivery_id}" onchange="suggestAdjusted('${w.delivery_id}')"></div><div><input type="number" min="0" value="${Number(w.adjusted_amount||0)}" id="adj-${w.delivery_id}"></div><div><label><input type="checkbox" id="rec-${w.delivery_id}" ${w.reconciled?'checked':''}> 已對帳</label><button class="btn alt" style="margin-top:6px" onclick="saveManagement('${w.delivery_id}')">儲存</button></div></div>`).join(''):'<div class="notice">此月份尚無已完成配送訂單</div>')}
+window.suggestAdjusted=id=>{const original=Number($(`#orig-${id}`).value||0),adjusted=$(`#adj-${id}`);if(!adjusted.value||Number(adjusted.value)===0)adjusted.value=Math.round(original*.88)};
+window.saveManagement=async id=>{try{await workorderApi('/api/v10/management',{method:'PUT',body:JSON.stringify({delivery_id:id,original_amount:Number($(`#orig-${id}`).value||0),adjusted_amount:Number($(`#adj-${id}`).value||0),reconciled:$(`#rec-${id}`).checked})});toast('對帳資料已儲存');await loadWorkorders()}catch(e){toast(e.message)}};
+$('#workorderUnlockBtn').onclick=async()=>{localStorage.setItem('workorderPin',$('#workorderPin').value);try{await loadWorkorders();$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block';toast('管理中心已解鎖')}catch(e){localStorage.removeItem('workorderPin');toast(e.message)}};
+$('#workorderLockBtn').onclick=()=>{localStorage.removeItem('workorderPin');$('#workorderContent').style.display='none';$('#workorderLocked').style.display='block';$('#workorderPin').value=''};
+$('#workorderRefreshBtn').onclick=()=>loadWorkorders().catch(e=>toast(e.message));$('#workorderMonth').onchange=()=>loadWorkorders().catch(e=>toast(e.message));
 
 function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();renderRoutePlan();renderDriverMode();updateDateBlockWarning()}
 
@@ -1247,7 +1070,9 @@ $('#scheduleForm').onsubmit=async e=>{
     customer_name:$('#customerName').value.trim(),
     customer_phone:$('#phone').value.trim(),
     delivery_address:$('#address').value.trim(),
-    sales_name:$('#salesperson').value.trim(),
+    order_number:$('#orderNumber').value.trim(),
+    sales_name:'',
+    work_order_sent:$('#workOrderSent').checked,
     service_minutes:+$('#serviceMinutes').value||0,
     status:$('#status').value,
     notes:$('#note').value.trim(),
@@ -1269,19 +1094,10 @@ function dateString(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function renderDashboard(){
-  const today=localDate();
-  const arr=dayRows(today);
+  const today=localDate(),arr=dayRows(today);
   $('#todayTitle').textContent=`今日配送｜${today.replaceAll('-','/')}`;
-  $('#todayMetrics').innerHTML=[
-    ['今日組數',arr.length],
-    ['待確認',arr.filter(r=>r.status==='待確認').length],
-    ['配送中',arr.filter(r=>r.status==='配送中').length],
-    ['已完成',arr.filter(r=>r.status==='已完成').length]
-  ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
-  $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}">
-    <div class="today-main">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))} ${rescheduleFlag(r)}</div>
-    ${taskBadges(r.tasks)}<div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div>
-  </div>`).join(''):'今天尚無配送安排';
+  $('#todayMetrics').innerHTML=[['今日站數',arr.length],['待確認',arr.filter(r=>r.status==='待確認').length],['待補工單',arr.filter(r=>!r.work_order_sent).length],['已完成',arr.filter(r=>r.status==='已完成').length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
+  $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}"><div class="today-main">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))} ${completedMark(r)} ${missingWorkorderMark(r)}</div>${taskBadges(r.tasks)}<div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div></div>`).join(''):'今天尚無配送安排';
 }
 
 function renderMobileCalendar(){
@@ -1306,7 +1122,7 @@ function renderMobileCalendar(){
   for(let i=0;i<6;i++){
     const r=arr[i];
     slots+=r
-      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))} ${rescheduleFlag(r)} ${completedMark(r)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="calendar-task-line">${esc(primaryTaskLabel(r.tasks))}</div><div class="mobile-slot-meta">${esc(statusDisplay(r.status))}</div>${noteButton(r)}</div>`
+      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))} ${completedMark(r)} ${missingWorkorderMark(r)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="calendar-task-line">${esc(primaryTaskLabel(r.tasks))}</div><div class="mobile-slot-meta">${esc(statusDisplay(r.status))}</div>${noteButton(r)}</div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 站</b></div>`;
     slots+=reloadMarkerHtml(selectedMobileDate,i+1,true);
   }
@@ -1328,7 +1144,7 @@ function renderCalendar(){
     for(let s=0;s<6;s++){
       const r=arr[s];
       html+=r?`<div class="slot filled ${statusClass(r.status)}">
-        <span class="slotno">${s+1}.</span> <b>${esc(displayName(r))}</b> ${rescheduleFlag(r)} ${completedMark(r)}<br>
+        <span class="slotno">${s+1}.</span> <b>${esc(displayName(r))}</b> ${completedMark(r)} ${missingWorkorderMark(r)}<br>
         ${esc(calendarTimeLabel(r,s))}｜<span class="district-tag">${esc(districtOf(r.delivery_address))}</span>
         <div class="calendar-task-line">${esc(primaryTaskLabel(r.tasks))}</div>
         ${noteButton(r)}
@@ -1343,52 +1159,19 @@ function renderCalendar(){
 $('#prevMonth').onclick=()=>{currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1);renderCalendar()};
 $('#nextMonth').onclick=()=>{currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1);renderCalendar()};
 
+let listOnlyMissingWorkorder=false;
 function renderList(){
-  const selected=$('#listDate')?.value||'';
-  const visible=selected?rows.filter(r=>r.delivery_date===selected):rows;
-  const active=visible.filter(r=>r.status!=='已取消');
-
-  $('#listDateTitle').textContent=selected
-    ? `${selected} 配送清單`
-    : '全部日期配送清單';
-
-  $('#metrics').innerHTML=[
-    ['配送站數',visible.length],
-    ['待確認',visible.filter(r=>r.status==='待確認').length],
-    ['需改期',visible.filter(r=>r.status==='需改期').length],
-    ['已完成',visible.filter(r=>r.status==='已完成').length]
-  ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
-
-  $('#tbody').innerHTML=visible.map(r=>`<tr>
-    <td><strong style="font-size:16px">${esc(r.delivery_date)}</strong><br>第 ${r.delivery_order||'-'} 站<br>${esc(calendarTimeLabel(r,Math.max(0,(r.delivery_order||1)-1)))}</td>
-    <td><b>${esc(displayName(r))}</b> ${rescheduleFlag(r)} ${completedMark(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}${noteButton(r)}</td>
-    <td>${taskBadges(r.tasks)}${(r.tasks||[]).length?`<div class="task-detail">${esc(taskSummary(r.tasks))}</div>`:''}</td>
-    <td>${pickupGroupHtml(r.items)}</td>
-    <td>${r.service_minutes||0} 分鐘<br><small>業務：${esc(r.sales_name)}</small></td>
-    <td><select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">
-      ${['待確認','已確認','需改期','配送中','已完成','已取消'].map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s==='需改期'?'⚠ 需改期':s}</option>`).join('')}
-    </select></td>
-    <td><div class="actions"><button class="btn alt" onclick="editRow('${r.id}')">編輯</button><button class="btn danger" onclick="deleteRow('${r.id}')">刪除</button></div></td>
-  </tr>`).join('')||'<tr><td colspan="7">此日期尚無配送資料</td></tr>';
+ const selected=$('#listDate')?.value||''; let visible=selected?rows.filter(r=>r.delivery_date===selected):rows;
+ if(listOnlyMissingWorkorder)visible=visible.filter(r=>!r.work_order_sent&&r.status!=='已取消');
+ $('#listDateTitle').textContent=listOnlyMissingWorkorder?'待補工單配送清單':selected?`${selected} 配送清單`:'全部日期配送清單';
+ $('#metrics').innerHTML=[['配送站數',visible.length],['待確認',visible.filter(r=>r.status==='待確認').length],['已確認',visible.filter(r=>r.status==='已確認').length],['待補工單',visible.filter(r=>!r.work_order_sent).length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
+ $('#tbody').innerHTML=visible.map(r=>`<tr class="${r.status==='已完成'?'completed-row':''}"><td><strong style="font-size:16px">${esc(r.delivery_date)}</strong><br>第 ${r.delivery_order||'-'} 站<br>${esc(calendarTimeLabel(r,Math.max(0,(r.delivery_order||1)-1)))}</td><td><b>${esc(displayName(r))}</b> ${completedMark(r)} ${missingWorkorderMark(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}${noteButton(r)}</td><td><div class="order-number">${esc(r.order_number||'未填訂單編號')}</div>${taskBadges(r.tasks)}</td><td>${pickupGroupHtml(r.items)}</td><td>${r.service_minutes||0} 分鐘</td><td>${r.status==='已完成'?'<span class="completed-label">✓ 已完成配送</span>':`<select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">${['待確認','已確認','已取消'].map(x=>`<option value="${x}" ${x===r.status?'selected':''}>${x}</option>`).join('')}</select>`}</td><td><div class="actions"><button class="btn alt" onclick="editRow('${r.id}')">編輯</button><button class="btn danger" onclick="deleteRow('${r.id}')">刪除</button></div></td></tr>`).join('')||'<tr><td colspan="7">目前沒有符合條件的配送資料</td></tr>';
 }
-$('#listDate').onchange=renderList;
-$('#listTodayBtn').onclick=()=>{$('#listDate').value=localDate();renderList()};
-$('#listAllBtn').onclick=()=>{$('#listDate').value='';renderList()};
-window.quickStatus=async select=>{
-  const id=select.dataset.id;
-  const newStatus=select.value;
-  const previous=rows.find(r=>r.id===id)?.status||'待確認';
-  select.disabled=true;
-  try{
-    const result=await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:newStatus})});
-    if(result.delivery?.status!==newStatus)throw new Error('狀態更新驗證失敗');
-    toast(`狀態已改為：${newStatus}`);
-    await load();
-  }catch(e){
-    select.value=previous;
-    toast(e.message);
-  }finally{select.disabled=false}
-};
+$('#listDate').onchange=()=>{listOnlyMissingWorkorder=false;renderList()};
+$('#listTodayBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listDate').value=localDate();renderList()};
+$('#listAllBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listDate').value='';renderList()};
+$('#listMissingWorkorderBtn').onclick=()=>{listOnlyMissingWorkorder=true;$('#listDate').value='';renderList()};
+window.quickStatus=async select=>{const id=select.dataset.id,row=rows.find(r=>r.id===id);if(row?.status==='已完成'){toast('已完成配送只能由司機模式還原');renderList();return}const newStatus=select.value,previous=row?.status||'待確認';select.disabled=true;try{const result=await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:newStatus,source:'list'})});if(result.delivery?.status!==newStatus)throw new Error('狀態更新驗證失敗');toast(`狀態已改為：${newStatus}`);await load()}catch(e){select.value=previous;toast(e.message)}finally{select.disabled=false}};
 window.deleteRow=async id=>{if(!confirm('確定刪除這筆配送？'))return;try{await api('/api/v5/schedules',{method:'DELETE',body:JSON.stringify({id})});toast('已刪除');await load()}catch(e){toast(e.message)}}
 window.editRow=id=>{
   const r=rows.find(x=>x.id===id);
@@ -1407,7 +1190,7 @@ window.editRow=id=>{
     customerName:r.customer_name||'',
     phone:r.customer_phone||'',
     address:r.delivery_address||'',
-    salesperson:r.sales_name||'',
+    orderNumber:r.order_number||'',
     serviceMinutes:r.service_minutes??0,
     status:r.status||'待確認',
     note:r.notes||''
@@ -1417,6 +1200,7 @@ window.editRow=id=>{
     if(el)el.value=value;
   });
   syncTime();
+  $('#workOrderSent').checked=!!r.work_order_sent;
 
   (r.items||[]).forEach(i=>{
     const cb=[...$('#productPicker').querySelectorAll('input')].find(x=>x.dataset.productId===i.product_id);
@@ -1573,7 +1357,7 @@ function renderRoutePlan(){
     if(idx===0)mins+=r.service_minutes||0;
     routeRows.push(`<tr>
       <td>第 ${idx+1} 站</td>
-      <td>抵達 ${esc(arrival)}<br>離開 ${esc(leave)}</td>
+      <td><div class="manual-time"><input type="time" value="${r.estimated_arrival?cleanTime(r.estimated_arrival):''}" id="arrival-${r.id}"><button class="btn alt" onclick="saveArrivalTime('${r.id}')">儲存</button></div><small>${r.estimated_arrival?'已設定':'未設定則顯示待通知'}</small></td>
       <td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}${r.notes?`<div class="delivery-note">📝 ${esc(r.notes)}</div>`:''}</td>
       <td>${esc(itemText(r.items))}</td>
       <td>${r.service_minutes||0} 分鐘</td>
@@ -1712,7 +1496,7 @@ window.completeDelivery=async id=>{
   if(isFutureDate(r.delivery_date)){toast('配送日期尚未到，不能提前完成');return}
   if(!confirm(`確定將「${displayName(r)}」標記為已完成？`))return;
   try{
-    await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:'已完成'})});
+    await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:'已完成',source:'driver'})});
     toast('此站已完成，月曆已同步更新');
     await load();
   }catch(e){toast(e.message)}
@@ -1722,7 +1506,7 @@ window.undoDelivery=async id=>{
   if(!r)return;
   if(!confirm(`確定還原「${displayName(r)}」為未完成？`))return;
   try{
-    await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:'已確認'})});
+    await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:'已確認',source:'driver'})});
     toast('已還原為已確認');
     await load();
   }catch(e){toast(e.message)}
@@ -1730,11 +1514,12 @@ window.undoDelivery=async id=>{
 $('#driverRefresh').onclick=load;
 $('#driverDate').onchange=renderDriverMode;
 
+window.saveArrivalTime=async id=>{const value=$(`#arrival-${id}`).value||null;try{await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,estimated_arrival:value,source:'route'})});toast(value?`已設定抵達時間 ${value}`:'已清除手動時間');await load()}catch(e){toast(e.message)}};
 $('#planBtn').onclick=renderRoutePlan;
 $('#planDate').onchange=()=>{syncFirstArrivalInput();renderRoutePlan()};
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan'){syncFirstArrivalInput();renderRoutePlan()}if(b.dataset.tab==='driver')renderDriverMode();if(b.dataset.tab==='list')renderList();if(b.dataset.tab==='workorders'){populateWorkorderDeliveries();if(workorderPin()){loadWorkorders().then(()=>{$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block'}).catch(()=>{})}}});
-$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=$('#workorderDate').value=localDate();$('#workorderMonth').value=localDate().slice(0,7);syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='form'&&!$('#editingId').value)resetForm();if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan'){syncFirstArrivalInput();renderRoutePlan()}if(b.dataset.tab==='driver')renderDriverMode();if(b.dataset.tab==='list')renderList();if(b.dataset.tab==='workorders'&&workorderPin()){loadWorkorders().then(()=>{$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block'}).catch(()=>{})}});
+$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=localDate();$('#workorderMonth').value=localDate().slice(0,7);syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
 </script>
