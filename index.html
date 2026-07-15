@@ -60,6 +60,63 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 .block-inline-warning{display:none;padding:10px;border-radius:10px;background:#FFF1B8;border:1px solid #D89A00;color:#725C3A;font-weight:900;margin-top:8px}
 .block-inline-warning.show{display:block}
 
+
+/* V5.3 月曆禁排醒目標示 */
+.day.has-block{box-shadow:inset 0 0 0 2px #C96B5C}
+.day.blocked-all-day{background:#F8DEDA!important}
+.day.blocked-all-day .dateNo{background:#A84F45!important;color:#fff}
+.day.blocked-all-day .slot{background:rgba(255,255,255,.5)}
+.calendar-block-alert{
+  padding:7px 8px;
+  border-radius:8px;
+  background:#C85F52;
+  border:1px solid #9F4339;
+  color:#fff;
+  font-size:11px;
+  line-height:1.35;
+  font-weight:900;
+  margin:5px 0;
+}
+.calendar-block-alert.all-day{
+  background:#A84F45;
+  font-size:12px;
+  text-align:center;
+}
+.calendar-block-reason{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  font-weight:700;
+  opacity:.92;
+}
+.mobile-date-btn.has-block{
+  border:2px solid #C85F52;
+  background:#F8DEDA;
+  color:#8B3F36;
+}
+.mobile-date-btn.blocked-all-day{
+  background:#A84F45;
+  border-color:#8F382F;
+  color:#fff;
+}
+.mobile-date-btn.blocked-all-day small,
+.mobile-date-btn.blocked-all-day b{color:#fff}
+.mobile-date-btn.has-block.active{
+  background:#C85F52;
+  border-color:#9F4339;
+  color:#fff;
+}
+.mobile-date-btn.has-block.active small{color:#fff}
+.mobile-block-alert{
+  padding:12px;
+  border-radius:12px;
+  background:#C85F52;
+  color:#fff;
+  font-weight:900;
+  margin:8px 0 12px;
+}
+.mobile-block-alert.all-day{background:#A84F45}
+
 @media(max-width:780px){
 .grid,.grid3,.summary,.product-picker{grid-template-columns:1fr}
 .item-row{grid-template-columns:1fr 1fr}
@@ -73,7 +130,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.2 排程警示版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.3 月曆禁排醒目版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -247,6 +304,18 @@ function blockTypeLabel(type,start,end){
 }
 function blocksForDate(date){return blocks.filter(b=>b.block_date===date)}
 function blockSummary(date){return blocksForDate(date).map(b=>blockTypeLabel(b.block_type,b.start_time,b.end_time)).join('、')}
+
+function hasAllDayBlock(date){return blocksForDate(date).some(b=>b.block_type==='all_day')}
+function calendarBlockHtml(date,mobile=false){
+  const list=blocksForDate(date);
+  if(!list.length)return '';
+  const allDay=list.some(b=>b.block_type==='all_day');
+  const title=allDay?'⛔ 整天無法配送':`⛔ ${blockSummary(date)}`;
+  const reasons=list.map(b=>b.reason).filter(Boolean).join('；');
+  const klass=mobile?'mobile-block-alert':'calendar-block-alert';
+  return `<div class="${klass} ${allDay?'all-day':''}">${esc(title)}${reasons?`<span class="calendar-block-reason">${esc(reasons)}</span>`:''}</div>`;
+}
+
 function isAfternoonRequest(r){
   if(!r)return false;
   if(r.requested_period==='希望下午送達')return true;
@@ -408,7 +477,8 @@ function renderMobileCalendar(){
     const d=new Date(y,m,i+1),ds=dateString(d);
     const weekday=['日','一','二','三','四','五','六'][d.getDay()];
     const count=dayRows(ds).length;
-    return `<button class="mobile-date-btn ${ds===selectedMobileDate?'active':''}" data-date="${ds}"><b>${i+1}</b><small>週${weekday}${count?`・${count}組`:''}</small></button>`;
+    const blocked=blocksForDate(ds).length>0,allDay=hasAllDayBlock(ds);
+    return `<button class="mobile-date-btn ${ds===selectedMobileDate?'active':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''}" data-date="${ds}"><b>${i+1}</b><small>週${weekday}${allDay?'・禁排':blocked?'・部分禁排':count?`・${count}組`:''}</small></button>`;
   }).join('');
   const arr=dayRows(selectedMobileDate);
   const selectedBlocks=blocksForDate(selectedMobileDate);
@@ -421,7 +491,7 @@ function renderMobileCalendar(){
       ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))} ${rescheduleFlag(r)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 組</b></div>`;
   }
-  $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div>${selectedBlocks.length?`<div class="block-banner">⚠ ${esc(blockSummary(selectedMobileDate))}</div>`:''}<div class="mobile-slots">${slots}</div>`;
+  $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div>${calendarBlockHtml(selectedMobileDate,true)}<div class="mobile-slots">${slots}</div>`;
   $('#mobileCalendar').querySelectorAll('.mobile-date-btn').forEach(btn=>{btn.onclick=()=>{selectedMobileDate=btn.dataset.date;renderMobileCalendar();};});
   requestAnimationFrame(()=>{const active=$('#mobileCalendar .mobile-date-btn.active');if(active)active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});});
 }
@@ -434,7 +504,8 @@ function renderCalendar(){
     const d=new Date(start);d.setDate(start.getDate()+i);
     const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const arr=dayRows(ds);
-    html+=`<div class="day ${d.getMonth()!==m?'other':''}"><div class="dateNo">${d.getDate()}</div>${blocksForDate(ds).length?`<div class="block-banner">⚠ ${esc(blockSummary(ds))}</div>`:''}`;
+    const blocked=blocksForDate(ds).length>0,allDay=hasAllDayBlock(ds);
+    html+=`<div class="day ${d.getMonth()!==m?'other':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''}"><div class="dateNo">${d.getDate()}</div>${calendarBlockHtml(ds,false)}`;
     for(let s=0;s<6;s++){
       const r=arr[s];
       html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(calendarTimeLabel(r,s))}｜${esc(displayName(r))} ${rescheduleFlag(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
