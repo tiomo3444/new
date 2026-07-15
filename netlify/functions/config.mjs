@@ -1,13 +1,29 @@
-import { response,authorized,supabase } from "./_common.mjs";
-export default async req=>{
-  try{
-    if(!authorized(req)) return response({error:"PIN 錯誤"},401);
-    const db=supabase();
-    const [{data:products,error:e1},{data:locations,error:e2}]=await Promise.all([
-      db.from("products").select("id,name,sort_order").eq("is_active",true).order("sort_order"),
-      db.from("pickup_locations").select("id,name,address,location_type,sort_order").eq("is_active",true).order("sort_order")
+import { response, supabase } from "./_common.mjs";
+
+// 商品與固定撿貨地點屬於表單基本設定，允許未輸入 PIN 時載入。
+// 配送資料的新增、讀取、修改與刪除仍由 schedules.mjs 驗證 SHARED_PIN。
+export default async () => {
+  try {
+    const db = supabase();
+    const [
+      { data: products, error: productError },
+      { data: locations, error: locationError }
+    ] = await Promise.all([
+      db.from("products")
+        .select("id,name,sort_order")
+        .eq("is_active", true)
+        .order("sort_order"),
+      db.from("pickup_locations")
+        .select("id,name,address,location_type,sort_order")
+        .eq("is_active", true)
+        .order("sort_order")
     ]);
-    if(e1) throw e1;if(e2) throw e2;
-    return response({products,locations});
-  }catch(e){return response({error:e.message||"系統錯誤"},500)}
+
+    if (productError) throw productError;
+    if (locationError) throw locationError;
+
+    return response({ products: products || [], locations: locations || [] });
+  } catch (error) {
+    return response({ error: error.message || "商品設定讀取失敗" }, 500);
+  }
 };
