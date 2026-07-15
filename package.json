@@ -1,6 +1,6 @@
 {
-  "name": "furniture-delivery-management",
-  "version": "3.0.0",
+  "name": "liwu-furniture-delivery-platform",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "dependencies": {

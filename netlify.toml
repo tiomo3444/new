@@ -6,11 +6,21 @@
   node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/api/config"
-  to = "/.netlify/functions/config"
+  from = "/api/v5/config"
+  to = "/.netlify/functions/platform_config"
   status = 200
 
 [[redirects]]
-  from = "/api/schedules"
-  to = "/.netlify/functions/schedules"
+  from = "/api/v5/schedules"
+  to = "/.netlify/functions/platform_schedules"
   status = 200
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"

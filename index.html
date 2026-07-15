@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>裏物傢俱配送管理平台</title>
 <style>
 :root{--brand:#315f63;--brand2:#e3efee;--ink:#26383d;--muted:#6f7d83;--line:#d8e1e2;--bg:#f5f7f7;--warn:#fff2cf;--ok:#e4f3e9;--danger:#fee6e3}
@@ -59,7 +62,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">V4｜正式共用版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">V5｜正式共用版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -114,7 +117,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 <section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
 <div class="grid3"><div><label>高雄倉庫</label><input value="高雄市仁武區成功路152號" readonly></div><div><label>台南倉庫</label><input value="台南市東區自由路一段8號" readonly></div><div><label>台南門市</label><input value="台南市東區崇善路762號" readonly></div></div>
-<div class="notice">本版本已取消共用 PIN，開啟公司網址即可使用。Supabase 管理金鑰仍只存放在 Netlify 後端。</div>
+<div class="notice">本版本已完全移除 PIN 驗證，開啟公司網址即可使用。</div>
 </div></section>
 </main>
 <div class="toast" id="toast"></div>
@@ -164,7 +167,7 @@ $('#scheduleForm').onreset=()=>setTimeout(resetForm,0);
 $('#cancelEdit').onclick=resetForm;
 
 async function loadConfig(){
-  const d=await api('/api/config');
+  const d=await api('/api/v5/config');
   products=Array.isArray(d.products)?d.products:[];
   locations=Array.isArray(d.locations)?d.locations:[];
   initProductPicker();
@@ -174,7 +177,7 @@ async function loadConfig(){
 }
 async function load(){
   document.body.classList.add('loading');
-  try{rows=await api('/api/schedules');renderAll()}
+  try{rows=await api('/api/v5/schedules');renderAll()}
   catch(e){toast(e.message)}
   finally{document.body.classList.remove('loading')}
 }
@@ -212,7 +215,7 @@ $('#scheduleForm').onsubmit=async e=>{
     items
   };
   try{
-    const result=await api('/api/schedules',{method:body.id?'PUT':'POST',body:JSON.stringify(body)});
+    const result=await api('/api/v5/schedules',{method:body.id?'PUT':'POST',body:JSON.stringify(body)});
     if(body.id && result.delivery?.status!==body.status)throw new Error('資料庫狀態未同步，請重試');
     toast(body.id?'已更新配送安排':'已新增配送安排');
     await load();
@@ -310,7 +313,7 @@ window.quickStatus=async select=>{
   const previous=rows.find(r=>r.id===id)?.status||'待確認';
   select.disabled=true;
   try{
-    const result=await api('/api/schedules',{method:'PATCH',body:JSON.stringify({id,status:newStatus})});
+    const result=await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:newStatus})});
     if(result.delivery?.status!==newStatus)throw new Error('狀態更新驗證失敗');
     toast(`狀態已改為：${newStatus}`);
     await load();
@@ -319,7 +322,7 @@ window.quickStatus=async select=>{
     toast(e.message);
   }finally{select.disabled=false}
 };
-window.deleteRow=async id=>{if(!confirm('確定刪除這筆配送？'))return;try{await api('/api/schedules',{method:'DELETE',body:JSON.stringify({id})});toast('已刪除');await load()}catch(e){toast(e.message)}}
+window.deleteRow=async id=>{if(!confirm('確定刪除這筆配送？'))return;try{await api('/api/v5/schedules',{method:'DELETE',body:JSON.stringify({id})});toast('已刪除');await load()}catch(e){toast(e.message)}}
 window.editRow=id=>{
   const r=rows.find(x=>x.id===id);if(!r)return;
   $('#editingId').value=r.id;$('#date').value=r.delivery_date;$('#timeSlot').value=r.requested_period;$('#constraintType').value=r.constraint_type;$('#earliestTime').value=r.earliest_time||'';$('#latestTime').value=r.latest_time||'';
