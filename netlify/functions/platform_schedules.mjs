@@ -211,6 +211,14 @@ export default async req => {
         await db.from("deliveries").delete().eq("id", delivery.id);
         throw itemError;
       }
+      const tasks = (body.tasks || []).map((task, index) => ({ ...task, delivery_id: delivery.id, task_order: index + 1 }));
+      if (tasks.length) {
+        const { error: taskError } = await db.from("delivery_tasks").insert(tasks);
+        if (taskError) {
+          await db.from("deliveries").delete().eq("id", delivery.id);
+          throw taskError;
+        }
+      }
       return response({ ok: true, id: delivery.id }, 201);
     }
 
@@ -271,6 +279,14 @@ export default async req => {
       if (items.length) {
         const { error: itemError } = await db.from("delivery_items").insert(items);
         if (itemError) throw itemError;
+      }
+
+      const { error: deleteTasksError } = await db.from("delivery_tasks").delete().eq("delivery_id", body.id);
+      if (deleteTasksError) throw deleteTasksError;
+      const tasks = (body.tasks || []).map((task, index) => ({ ...task, delivery_id: body.id, task_order: index + 1 }));
+      if (tasks.length) {
+        const { error: taskError } = await db.from("delivery_tasks").insert(tasks);
+        if (taskError) throw taskError;
       }
       return response({ ok: true, delivery: updated });
     }
