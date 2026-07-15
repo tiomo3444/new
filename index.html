@@ -8,30 +8,30 @@
 <meta http-equiv="Expires" content="0">
 <title>裏物傢俱配送管理平台</title>
 <style>
-:root{--brand:#315f63;--brand2:#e3efee;--ink:#26383d;--muted:#6f7d83;--line:#d8e1e2;--bg:#f5f7f7;--warn:#fff2cf;--ok:#e4f3e9;--danger:#fee6e3}
+:root{--brand:#809671;--brand2:#B3B792;--ink:#725C3A;--muted:#8A7B68;--line:#D8CEBF;--bg:#E5E0D8;--surface:#F7F3EC;--chai:#D2AB80;--vanilla:#E5D2B8;--warn:#F5E6CF;--ok:#DDE5D4;--danger:#F1D8D1}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink)}
-header{background:linear-gradient(135deg,#294f53,#47797d);color:#fff;padding:25px 18px}.wrap{max-width:1240px;margin:auto;padding:18px}
+header{background:linear-gradient(135deg,#725C3A,#8B7655);color:#F7F3EC;padding:28px 18px;border-bottom:6px solid #D2AB80}.wrap{max-width:1240px;margin:auto;padding:18px}
 h1{margin:0 0 6px}.sub{opacity:.9}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab,.btn{border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
-.tab{border-radius:999px;background:#e5ebec;color:#32464b}.tab.active,.btn{background:var(--brand);color:#fff}.btn.alt{background:#e7eeee;color:#29494d}.btn.danger{background:#b75148}
-.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px rgba(31,53,58,.05)}
+.tab{border-radius:999px;background:#E5D2B8;color:#725C3A}.tab.active,.btn{background:var(--brand);color:#fff}.btn.alt{background:#B3B792;color:#4F4636}.btn.danger{background:#A85B50}
+.panel{display:none}.panel.active{display:block}.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px rgba(31,53,58,.05)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.full{grid-column:1/-1}
-label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}input,select,textarea{width:100%;border:1px solid #cbd6d8;border-radius:10px;padding:10px 11px;font:inherit;background:#fff}
+label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}input,select,textarea{width:100%;border:1px solid #C7B9A5;border-radius:10px;padding:10px 11px;font:inherit;background:#fff}
 textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .notice{padding:12px;border-radius:10px;background:var(--warn);margin:12px 0}.product-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.pickbox{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fafcfc}.pickbox input{width:auto}
-.item-row{display:grid;grid-template-columns:1.1fr .55fr 1.15fr 1.5fr;gap:9px;align-items:end;padding:11px;border:1px solid var(--line);border-radius:12px;margin-top:9px;background:#fbfcfc}
-.item-name{font-weight:900;padding-bottom:12px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{background:#f3f7f7;border-radius:12px;padding:14px}.metric b{font-size:23px;display:block}
+.pickbox{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#F7F3EC}.pickbox input{width:auto}
+.item-row{display:grid;grid-template-columns:1.1fr .55fr 1.15fr 1.5fr;gap:9px;align-items:end;padding:11px;border:1px solid var(--line);border-radius:12px;margin-top:9px;background:#F7F3EC}
+.item-name{font-weight:900;padding-bottom:12px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{background:#E5D2B8;border-radius:12px;padding:14px}.metric b{font-size:23px;display:block}
 .calendar-head{display:flex;justify-content:space-between;align-items:center}.calendar{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
-.weekday,.day{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.weekday{padding:8px;text-align:center;background:#edf3f3;font-weight:800}
-.day{min-height:250px;background:#fff;padding:7px}.day.other{background:#f8f9f9;color:#aaa}.dateNo{font-weight:900;margin:-7px -7px 7px;padding:7px 9px;background:#315f63;color:#fff;font-size:15px;border-bottom:1px solid #24484b}
+.weekday,.day{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.weekday{padding:8px;text-align:center;background:#B3B792;font-weight:800}
+.day{min-height:250px;background:#fff;padding:7px}.day.other{background:#f8f9f9;color:#aaa}.dateNo{font-weight:900;margin:-7px -7px 7px;padding:7px 9px;background:#725C3A;color:#F7F3EC;font-size:15px;border-bottom:1px solid #5C492F}
 .slot{min-height:39px;border:1px dashed #cfd9da;border-radius:7px;margin:5px 0;padding:5px;font-size:11px}.slot.filled{border-style:solid;background:var(--brand2);border-left:4px solid var(--brand)}
 .slot.pending{background:var(--warn);border-left-color:#d19b1a}.slot.cancelled{background:#f1f1f1;color:#888;border-left-color:#999}.slotno{font-weight:900}
-.list{overflow:auto}.list table{width:100%;border-collapse:collapse;min-width:980px}.list th,.list td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}.list th{background:#edf3f3;position:sticky;top:0}
-.status-select{min-width:100px;padding:7px 8px;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:var(--warn)}.badge.ok{background:var(--ok)}.pickup-group{margin-bottom:18px}.pickup-title{background:#edf3f3;padding:10px;border-radius:10px;font-weight:900;margin-bottom:8px}
-.checkline{display:flex;gap:8px;align-items:flex-start}.checkline input{width:auto;margin-top:3px}.toast{position:fixed;right:16px;bottom:16px;background:#26383c;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:20}
+.list{overflow:auto}.list table{width:100%;border-collapse:collapse;min-width:980px}.list th,.list td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}.list th{background:#B3B792;position:sticky;top:0}
+.status-select{min-width:100px;padding:7px 8px;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:var(--warn)}.badge.ok{background:var(--ok)}.pickup-group{margin-bottom:18px}.pickup-title{background:#B3B792;padding:10px;border-radius:10px;font-weight:900;margin-bottom:8px}
+.checkline{display:flex;gap:8px;align-items:flex-start}.checkline input{width:auto;margin-top:3px}.toast{position:fixed;right:16px;bottom:16px;background:#725C3A;color:#F7F3EC;padding:12px 16px;border-radius:10px;display:none;z-index:20}
 .loading{opacity:.6;pointer-events:none}
 .today-list{display:grid;gap:10px}.today-card{border:1px solid var(--line);border-left:6px solid var(--brand);border-radius:13px;padding:13px;background:#fff}.today-card.status-待確認{border-left-color:#d19b1a;background:#fff9e8}.today-card.status-已確認{border-left-color:#38875a;background:#edf8f1}.today-card.status-配送中{border-left-color:#3478b8;background:#edf5fc}.today-card.status-已完成{border-left-color:#626b70;background:#f0f2f3}.today-main{font-size:17px;font-weight:900}.today-meta{margin-top:5px;color:var(--muted);font-size:13px}
-.slot.status-待確認,.mobile-slot.status-待確認{background:#fff2cf;border-left-color:#d19b1a}.slot.status-已確認,.mobile-slot.status-已確認{background:#e4f3e9;border-left-color:#38875a}.slot.status-配送中,.mobile-slot.status-配送中{background:#e6f1fb;border-left-color:#3478b8}.slot.status-已完成,.mobile-slot.status-已完成{background:#eceff0;border-left-color:#687176;color:#596267}.district-tag{display:inline-block;padding:2px 6px;border-radius:999px;background:#fff;border:1px solid #cbd6d8;font-size:10px;margin-left:4px}
+.slot.status-待確認,.mobile-slot.status-待確認{background:#F5E6CF;border-left-color:#d19b1a}.slot.status-已確認,.mobile-slot.status-已確認{background:#DDE5D4;border-left-color:#38875a}.slot.status-配送中,.mobile-slot.status-配送中{background:#E5E0D8;border-left-color:#3478b8}.slot.status-已完成,.mobile-slot.status-已完成{background:#D8CEBF;border-left-color:#687176;color:#596267}.district-tag{display:inline-block;padding:2px 6px;border-radius:999px;background:#F7F3EC;border:1px solid #C7B9A5;font-size:10px;margin-left:4px}
 
 .mobile-calendar{display:none}
 .mobile-date-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
@@ -62,7 +62,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">V5｜正式共用版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.1 品牌排程版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -86,7 +86,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div><label>配送日期 *</label><input id="date" type="date" required></div>
 <div><label>配送時段 *</label><select id="timeSlot">
 <option value="無指定">無指定</option><option value="希望上午送達">希望上午送達</option><option value="希望下午送達">希望下午送達</option><option value="指定時間後">指定時間後</option><option value="指定時間前">指定時間前</option><option value="指定時段">指定時段</option>
-</select></div>
+</select><div class="help" id="morningHint">上午配送每日限一組；第一組預設 11:00。</div></div>
 <div><label>限制強度</label><select id="constraintType"><option value="優先條件">優先條件（盡量符合）</option><option value="硬性限制">硬性限制（必須符合）</option></select></div>
 <div id="earliestWrap" style="display:none"><label>最早可抵達</label><input id="earliestTime" type="time"></div>
 <div id="latestWrap" style="display:none"><label>最晚可抵達</label><input id="latestTime" type="time"></div>
@@ -105,7 +105,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="actions"><button class="btn" id="saveBtn" type="submit">儲存配送安排</button><button class="btn alt" type="reset">清除</button><button class="btn alt" id="cancelEdit" type="button" style="display:none">取消編輯</button></div>
 </form></div></section>
 
-<section id="calendar" class="panel"><div class="card"><div class="calendar-head"><button class="btn alt" id="prevMonth">‹ 上月</button><h2 id="monthTitle"></h2><button class="btn alt" id="nextMonth">下月 ›</button></div><div id="calendarGrid"></div><div id="mobileCalendar" class="mobile-calendar"></div><div class="help">電腦顯示整月月曆；手機可左右選日期，再查看當日第 1～6 組。</div></div></section>
+<section id="calendar" class="panel"><div class="card"><div class="calendar-head"><button class="btn alt" id="prevMonth">‹ 上月</button><h2 id="monthTitle"></h2><button class="btn alt" id="nextMonth">下月 ›</button></div><div id="calendarGrid"></div><div id="mobileCalendar" class="mobile-calendar"></div><div class="help">第一組預設 11:00；硬性限制顯示指定時間；其餘顯示「待安排後通知」。上午配送每日限一組。</div></div></section>
 
 <section id="pickup" class="panel"><div class="card"><h2>物流撿貨表</h2><div class="grid"><div><label>撿貨日期</label><input id="pickupDate" type="date"></div><div class="actions" style="align-self:end"><button class="btn" id="refreshPickup">重新整理</button></div></div><div id="pickupContent" style="margin-top:16px"></div></div></section>
 
@@ -192,12 +192,54 @@ function districtOf(address){
 }
 function displayName(r){return `${r.sales_name||''} ${r.customer_name||''}`.trim()}
 function statusClass(s){return `status-${s||'待確認'}`}
+
+function cleanTime(t){return t?String(t).slice(0,5):''}
+function isMorningRequest(r){
+  if(!r)return false;
+  if(r.requested_period==='希望上午送達')return true;
+  if(r.constraint_type!=='硬性限制')return false;
+  const early=cleanTime(r.earliest_time), late=cleanTime(r.latest_time);
+  if(r.requested_period==='指定時段' && early && early<'12:00')return true;
+  if(r.requested_period==='指定時間前' && late && late<='12:00')return true;
+  return false;
+}
+function hardConstraintLabel(r){
+  if(!r || r.constraint_type!=='硬性限制')return '';
+  const early=cleanTime(r.earliest_time), late=cleanTime(r.latest_time);
+  if(r.requested_period==='指定時間後' && early)return `${early} 後`;
+  if(r.requested_period==='指定時間前' && late)return `${late} 前`;
+  if(r.requested_period==='指定時段' && early && late)return `${early}–${late}`;
+  if(r.requested_period==='希望上午送達')return '上午';
+  if(r.requested_period==='希望下午送達')return '下午';
+  return '';
+}
+function calendarTimeLabel(r,index){
+  if(r?.estimated_arrival)return cleanTime(r.estimated_arrival);
+  const hard=hardConstraintLabel(r);
+  if(hard)return hard;
+  if(index===0)return '11:00';
+  return '待安排後通知';
+}
+function dateHasOtherMorning(date,excludeId=''){
+  return rows.some(r=>r.delivery_date===date && r.id!==excludeId && r.status!=='已取消' && isMorningRequest(r));
+}
+
 function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已取消').sort((a,b)=>(a.delivery_order||99)-(b.delivery_order||99)||String(a.created_at).localeCompare(String(b.created_at)))}
 function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup()}
 
 $('#scheduleForm').onsubmit=async e=>{
   e.preventDefault();
   const items=collectItems();if(!items.length)return toast('請至少勾選一個商品');
+  const draftForMorning={
+    requested_period:$('#timeSlot').value,
+    constraint_type:$('#constraintType').value,
+    earliest_time:$('#earliestTime').value||null,
+    latest_time:$('#latestTime').value||null
+  };
+  if(isMorningRequest(draftForMorning) && dateHasOtherMorning($('#date').value,$('#editingId').value||'')){
+    return toast('此日期已有一組上午配送，請改選下午或其他日期');
+  }
+
   const body={
     id:$('#editingId').value||undefined,
     delivery_date:$('#date').value,
@@ -239,7 +281,7 @@ function renderDashboard(){
     ['已完成',arr.filter(r=>r.status==='已完成').length]
   ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
   $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}">
-    <div class="today-main">第 ${i+1} 組｜${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}｜${esc(displayName(r))}</div>
+    <div class="today-main">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))}</div>
     <div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(r.status)}</div>
   </div>`).join(''):'今天尚無配送安排';
 }
@@ -264,7 +306,7 @@ function renderMobileCalendar(){
   for(let i=0;i<6;i++){
     const r=arr[i];
     slots+=r
-      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">第 ${i+1} 組｜${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(r.status)}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
+      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(r.status)}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 組</b></div>`;
   }
   $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div><div class="mobile-slots">${slots}</div>`;
@@ -283,7 +325,7 @@ function renderCalendar(){
     html+=`<div class="day ${d.getMonth()!==m?'other':''}"><div class="dateNo">${d.getDate()}</div>`;
     for(let s=0;s<6;s++){
       const r=arr[s];
-      html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}｜${esc(displayName(r))}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
+      html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
     }
     html+='</div>';
   }
