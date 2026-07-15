@@ -49,6 +49,17 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 .mobile-slot-head{font-weight:900;margin-bottom:4px}
 .mobile-slot-meta{font-size:13px;color:var(--muted);margin-top:3px}
 
+
+.status-需改期{background:#FFF1B8!important;border-left-color:#D89A00!important;color:#725C3A}
+.reschedule-flag{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;background:#FFD85A;color:#725C3A;font-size:11px;font-weight:900;margin-left:5px}
+.block-banner{padding:7px 9px;border-radius:8px;background:#FFF1B8;border:1px solid #D89A00;color:#725C3A;font-size:11px;font-weight:900;margin:5px 0}
+.block-card{border:1px solid #D8CEBF;border-left:6px solid #D89A00;border-radius:12px;padding:12px;background:#FFF8DD;margin-bottom:9px}
+.block-card.all-day{border-left-color:#A85B50;background:#F9E3DD}
+.block-type{font-weight:900}
+.block-reason{font-size:13px;color:#8A7B68;margin-top:4px}
+.block-inline-warning{display:none;padding:10px;border-radius:10px;background:#FFF1B8;border:1px solid #D89A00;color:#725C3A;font-weight:900;margin-top:8px}
+.block-inline-warning.show{display:block}
+
 @media(max-width:780px){
 .grid,.grid3,.summary,.product-picker{grid-template-columns:1fr}
 .item-row{grid-template-columns:1fr 1fr}
@@ -62,7 +73,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.1 品牌排程版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.2 排程警示版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -71,6 +82,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <button class="tab" data-tab="pickup">物流撿貨表</button>
 <button class="tab" data-tab="list">配送清單</button>
 <button class="tab" data-tab="routePlan">每日路線</button>
+<button class="tab" data-tab="blocks">請勿安排配送</button>
 <button class="tab" data-tab="settings">固定地點</button>
 </div>
 
@@ -83,7 +95,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="card"><h2 id="formTitle">新增配送安排</h2>
 <form id="scheduleForm"><input id="editingId" type="hidden">
 <div class="grid">
-<div><label>配送日期 *</label><input id="date" type="date" required></div>
+<div><label>配送日期 *</label><input id="date" type="date" required><div id="dateBlockWarning" class="block-inline-warning"></div></div>
 <div><label>配送時段 *</label><select id="timeSlot">
 <option value="無指定">無指定</option><option value="希望上午送達">希望上午送達</option><option value="希望下午送達">希望下午送達</option><option value="指定時間後">指定時間後</option><option value="指定時間前">指定時間前</option><option value="指定時段">指定時段</option>
 </select><div class="help" id="morningHint">上午配送每日限一組；第一組預設 11:00。</div></div>
@@ -115,6 +127,33 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="notice">目前先依第 1～6 組順序與業務填寫的卸貨組裝分鐘推算。免費車程 API 將在下一階段加入。</div>
 <button class="btn" id="planBtn">產生時間表</button><div class="list" style="margin-top:12px"><table><thead><tr><th>順序</th><th>抵達／離開</th><th>客戶</th><th>商品</th><th>作業時間</th><th>時段條件</th></tr></thead><tbody id="planBody"><tr><td colspan="6">尚未產生路線</td></tr></tbody></table></div></div></section>
 
+
+<section id="blocks" class="panel">
+<div class="card">
+<h2>請勿安排配送</h2>
+<div class="notice">由總負責人設定無法配送的日期或時段。業務新增配送時，系統會自動提醒並阻止衝突預約。</div>
+<form id="blockForm">
+<div class="grid">
+<div><label>日期 *</label><input id="blockDate" type="date" required></div>
+<div><label>不可配送時段 *</label><select id="blockType">
+<option value="morning">上午無法配送</option>
+<option value="afternoon">下午無法配送</option>
+<option value="all_day">整天無法配送</option>
+<option value="custom">自訂時段</option>
+</select></div>
+<div id="blockStartWrap" style="display:none"><label>開始時間</label><input id="blockStart" type="time"></div>
+<div id="blockEndWrap" style="display:none"><label>結束時間</label><input id="blockEnd" type="time"></div>
+<div class="full"><label>原因／備註</label><textarea id="blockReason" placeholder="例如：司機休假、車輛保養、倉庫盤點、下午已有外務"></textarea></div>
+</div>
+<div class="actions"><button class="btn" type="submit">新增禁排時段</button><button class="btn alt" type="reset">清除</button></div>
+</form>
+</div>
+<div class="card">
+<h2>禁排紀錄</h2>
+<div id="blockList"></div>
+</div>
+</section>
+
 <section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
 <div class="grid3"><div><label>高雄倉庫</label><input value="高雄市仁武區成功路152號" readonly></div><div><label>台南倉庫</label><input value="台南市東區自由路一段8號" readonly></div><div><label>台南門市</label><input value="台南市東區崇善路762號" readonly></div></div>
 <div class="notice">本版本已完全移除 PIN 驗證，開啟公司網址即可使用。</div>
@@ -124,14 +163,18 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 <script>
 const $=s=>document.querySelector(s);
-let products=[],locations=[],rows=[],currentMonth=new Date(),selectedMobileDate="";
+let products=[],locations=[],rows=[],blocks=[],currentMonth=new Date(),selectedMobileDate="";
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const headers=()=>({'Content-Type':'application/json'});
 const localDate=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function toast(msg){let t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 async function api(url,opt={}){let r=await fetch(url,{...opt,headers:{...headers(),...(opt.headers||{})}});let d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
 function syncTime(){let v=$('#timeSlot').value;$('#earliestWrap').style.display=['指定時間後','指定時段'].includes(v)?'block':'none';$('#latestWrap').style.display=['指定時間前','指定時段'].includes(v)?'block':'none'}
-$('#timeSlot').onchange=syncTime;
+$('#timeSlot').onchange=()=>{syncTime();updateDateBlockWarning()};
+$('#date').onchange=updateDateBlockWarning;
+$('#constraintType').onchange=updateDateBlockWarning;
+$('#earliestTime').onchange=updateDateBlockWarning;
+$('#latestTime').onchange=updateDateBlockWarning;
 
 function initProductPicker(){
   $('#productPicker').innerHTML=products.map(p=>`<label class="pickbox"><input type="checkbox" data-product-id="${p.id}" data-product-name="${esc(p.name)}"> ${esc(p.name)}</label>`).join('');
@@ -193,6 +236,71 @@ function districtOf(address){
 function displayName(r){return `${r.sales_name||''} ${r.customer_name||''}`.trim()}
 function statusClass(s){return `status-${s||'待確認'}`}
 
+function statusDisplay(s){return s==='需改期'?'⚠ 需改期':s}
+function rescheduleFlag(r){return r?.status==='需改期'?'<span class="reschedule-flag">⚠ 需改期</span>':''}
+function blockTypeLabel(type,start,end){
+  if(type==='morning')return '上午無法配送';
+  if(type==='afternoon')return '下午無法配送';
+  if(type==='all_day')return '整天無法配送';
+  if(type==='custom')return `${cleanTime(start)||'--:--'}–${cleanTime(end)||'--:--'} 無法配送`;
+  return '不可配送';
+}
+function blocksForDate(date){return blocks.filter(b=>b.block_date===date)}
+function blockSummary(date){return blocksForDate(date).map(b=>blockTypeLabel(b.block_type,b.start_time,b.end_time)).join('、')}
+function isAfternoonRequest(r){
+  if(!r)return false;
+  if(r.requested_period==='希望下午送達')return true;
+  if(r.constraint_type!=='硬性限制')return false;
+  const early=cleanTime(r.earliest_time),late=cleanTime(r.latest_time);
+  if(r.requested_period==='指定時間後' && early && early>='12:00')return true;
+  if(r.requested_period==='指定時段' && early && early>='12:00')return true;
+  if(r.requested_period==='指定時間前' && late && late>'12:00')return true;
+  return false;
+}
+function timeToMinutes(t){
+  const v=cleanTime(t);if(!v)return null;
+  const [h,m]=v.split(':').map(Number);return h*60+m;
+}
+function rangesOverlap(aStart,aEnd,bStart,bEnd){
+  return aStart<bEnd && bStart<aEnd;
+}
+function requestRange(r){
+  const early=timeToMinutes(r.earliest_time),late=timeToMinutes(r.latest_time);
+  if(r.constraint_type!=='硬性限制')return null;
+  if(r.requested_period==='指定時間後' && early!==null)return [early,24*60];
+  if(r.requested_period==='指定時間前' && late!==null)return [0,late];
+  if(r.requested_period==='指定時段' && early!==null && late!==null)return [early,late];
+  if(r.requested_period==='希望上午送達')return [0,12*60];
+  if(r.requested_period==='希望下午送達')return [12*60,24*60];
+  return null;
+}
+function blockConflictMessage(date,draft,excludeId=''){
+  const dayBlocks=blocksForDate(date);
+  if(!dayBlocks.length)return '';
+  if(dayBlocks.some(b=>b.block_type==='all_day'))return `此日期已設定「整天無法配送」：${dayBlocks.find(b=>b.block_type==='all_day')?.reason||'請改選其他日期'}`;
+  const morningBlocked=dayBlocks.some(b=>b.block_type==='morning');
+  const afternoonBlocked=dayBlocks.some(b=>b.block_type==='afternoon');
+  if(isMorningRequest(draft) && morningBlocked)return '此日期上午無法配送，請改選下午或其他日期';
+  if(isAfternoonRequest(draft) && afternoonBlocked)return '此日期下午無法配送，請改選上午或其他日期';
+  const rr=requestRange(draft);
+  if(rr){
+    const custom=dayBlocks.find(b=>b.block_type==='custom' && rangesOverlap(rr[0],rr[1],timeToMinutes(b.start_time)??0,timeToMinutes(b.end_time)??24*60));
+    if(custom)return `指定時間與禁排時段 ${blockTypeLabel(custom.block_type,custom.start_time,custom.end_time)} 衝突`;
+  }
+  const morningUsed=rows.some(r=>r.delivery_date===date && r.id!==excludeId && r.status!=='已取消' && isMorningRequest(r));
+  if(!isMorningRequest(draft) && !isAfternoonRequest(draft) && morningBlocked && afternoonBlocked)return '此日期上午與下午皆無法配送';
+  if(!isMorningRequest(draft) && !isAfternoonRequest(draft) && afternoonBlocked && morningUsed)return '此日期下午無法配送，且上午名額已使用，請改選其他日期';
+  return '';
+}
+function updateDateBlockWarning(){
+  const el=$('#dateBlockWarning');if(!el)return;
+  const date=$('#date').value;
+  const summary=blockSummary(date);
+  if(summary){el.innerHTML=`⚠ ${esc(summary)}${blocksForDate(date).some(b=>b.reason)?`<br><small>${esc(blocksForDate(date).map(b=>b.reason).filter(Boolean).join('；'))}</small>`:''}`;el.classList.add('show')}
+  else{el.textContent='';el.classList.remove('show')}
+}
+
+
 function cleanTime(t){return t?String(t).slice(0,5):''}
 function isMorningRequest(r){
   if(!r)return false;
@@ -225,7 +333,7 @@ function dateHasOtherMorning(date,excludeId=''){
 }
 
 function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已取消').sort((a,b)=>(a.delivery_order||99)-(b.delivery_order||99)||String(a.created_at).localeCompare(String(b.created_at)))}
-function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup()}
+function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();updateDateBlockWarning()}
 
 $('#scheduleForm').onsubmit=async e=>{
   e.preventDefault();
@@ -239,6 +347,9 @@ $('#scheduleForm').onsubmit=async e=>{
   if(isMorningRequest(draftForMorning) && dateHasOtherMorning($('#date').value,$('#editingId').value||'')){
     return toast('此日期已有一組上午配送，請改選下午或其他日期');
   }
+  const blockMessage=blockConflictMessage($('#date').value,draftForMorning,$('#editingId').value||'');
+  if(blockMessage)return toast(blockMessage);
+
 
   const body={
     id:$('#editingId').value||undefined,
@@ -281,8 +392,8 @@ function renderDashboard(){
     ['已完成',arr.filter(r=>r.status==='已完成').length]
   ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
   $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}">
-    <div class="today-main">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))}</div>
-    <div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(r.status)}</div>
+    <div class="today-main">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))} ${rescheduleFlag(r)}</div>
+    <div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div>
   </div>`).join(''):'今天尚無配送安排';
 }
 
@@ -300,16 +411,17 @@ function renderMobileCalendar(){
     return `<button class="mobile-date-btn ${ds===selectedMobileDate?'active':''}" data-date="${ds}"><b>${i+1}</b><small>週${weekday}${count?`・${count}組`:''}</small></button>`;
   }).join('');
   const arr=dayRows(selectedMobileDate);
+  const selectedBlocks=blocksForDate(selectedMobileDate);
   const selected=new Date(`${selectedMobileDate}T00:00:00`);
   const weekday=['日','一','二','三','四','五','六'][selected.getDay()];
   let slots='';
   for(let i=0;i<6;i++){
     const r=arr[i];
     slots+=r
-      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(r.status)}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
+      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))} ${rescheduleFlag(r)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 組</b></div>`;
   }
-  $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div><div class="mobile-slots">${slots}</div>`;
+  $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div>${selectedBlocks.length?`<div class="block-banner">⚠ ${esc(blockSummary(selectedMobileDate))}</div>`:''}<div class="mobile-slots">${slots}</div>`;
   $('#mobileCalendar').querySelectorAll('.mobile-date-btn').forEach(btn=>{btn.onclick=()=>{selectedMobileDate=btn.dataset.date;renderMobileCalendar();};});
   requestAnimationFrame(()=>{const active=$('#mobileCalendar .mobile-date-btn.active');if(active)active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});});
 }
@@ -322,10 +434,10 @@ function renderCalendar(){
     const d=new Date(start);d.setDate(start.getDate()+i);
     const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const arr=dayRows(ds);
-    html+=`<div class="day ${d.getMonth()!==m?'other':''}"><div class="dateNo">${d.getDate()}</div>`;
+    html+=`<div class="day ${d.getMonth()!==m?'other':''}"><div class="dateNo">${d.getDate()}</div>${blocksForDate(ds).length?`<div class="block-banner">⚠ ${esc(blockSummary(ds))}</div>`:''}`;
     for(let s=0;s<6;s++){
       const r=arr[s];
-      html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
+      html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(calendarTimeLabel(r,s))}｜${esc(displayName(r))} ${rescheduleFlag(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
     }
     html+='</div>';
   }
@@ -340,11 +452,11 @@ function renderList(){
   $('#metrics').innerHTML=[['全部',rows.length],['待確認',rows.filter(r=>r.status==='待確認').length],['已確認',rows.filter(r=>r.status==='已確認').length],['本月',active.filter(r=>r.delivery_date.startsWith(new Date().toISOString().slice(0,7))).length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
   $('#tbody').innerHTML=rows.map(r=>`<tr>
     <td>${esc(r.delivery_date)}<br>第 ${r.delivery_order||'-'} 組<br>${esc(r.requested_period)}</td>
-    <td><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}</td>
+    <td><b>${esc(displayName(r))}</b> ${rescheduleFlag(r)} <span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}</td>
     <td>${(r.items||[]).map(i=>`${esc(i.product_name)}×${i.quantity}<br><small>${esc(i.pickup_location_name)}${i.custom_pickup_address?`｜${esc(i.custom_pickup_address)}`:''}</small>`).join('<hr>')}</td>
     <td>${r.service_minutes||0} 分鐘</td><td>${esc(r.sales_name)}</td>
     <td><select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">
-      ${['待確認','已確認','需改期','配送中','已完成','已取消'].map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
+      ${['待確認','已確認','需改期','配送中','已完成','已取消'].map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${s==='需改期'?'⚠ 需改期':s}</option>`).join('')}
     </select></td>
     <td><div class="actions"><button class="btn alt" onclick="editRow('${r.id}')">編輯</button><button class="btn danger" onclick="deleteRow('${r.id}')">刪除</button></div></td>
   </tr>`).join('')||'<tr><td colspan="7">尚無資料</td></tr>';
@@ -383,14 +495,52 @@ function renderPickup(){
 }
 $('#refreshPickup').onclick=renderPickup;$('#pickupDate').onchange=renderPickup;
 
+
+function syncBlockTime(){
+  const custom=$('#blockType').value==='custom';
+  $('#blockStartWrap').style.display=custom?'block':'none';
+  $('#blockEndWrap').style.display=custom?'block':'none';
+}
+$('#blockType').onchange=syncBlockTime;
+$('#blockForm').onsubmit=async e=>{
+  e.preventDefault();
+  const body={
+    block_date:$('#blockDate').value,
+    block_type:$('#blockType').value,
+    start_time:$('#blockStart').value||null,
+    end_time:$('#blockEnd').value||null,
+    reason:$('#blockReason').value.trim()
+  };
+  if(body.block_type==='custom' && (!body.start_time||!body.end_time))return toast('自訂時段請填寫開始與結束時間');
+  if(body.block_type==='custom' && body.start_time>=body.end_time)return toast('結束時間必須晚於開始時間');
+  try{
+    await api('/api/v5/blocks',{method:'POST',body:JSON.stringify(body)});
+    toast('已新增禁排時段');
+    $('#blockForm').reset();$('#blockDate').value=localDate();syncBlockTime();await load();
+  }catch(e){toast(e.message)}
+};
+function renderBlocks(){
+  const list=[...blocks].sort((a,b)=>String(a.block_date).localeCompare(String(b.block_date))||String(a.created_at).localeCompare(String(b.created_at)));
+  $('#blockList').innerHTML=list.length?list.map(b=>`<div class="block-card ${b.block_type==='all_day'?'all-day':''}">
+    <div class="block-type">⚠ ${esc(b.block_date)}｜${esc(blockTypeLabel(b.block_type,b.start_time,b.end_time))}</div>
+    ${b.reason?`<div class="block-reason">${esc(b.reason)}</div>`:''}
+    <div class="actions" style="margin-top:8px"><button class="btn danger" onclick="deleteBlock('${b.id}')">刪除禁排</button></div>
+  </div>`).join(''):'目前沒有禁排紀錄';
+}
+window.deleteBlock=async id=>{
+  if(!confirm('確定刪除這筆禁排設定？'))return;
+  try{await api('/api/v5/blocks',{method:'DELETE',body:JSON.stringify({id})});toast('已刪除禁排設定');await load()}
+  catch(e){toast(e.message)}
+};
+
 $('#planBtn').onclick=()=>{
   const arr=dayRows($('#planDate').value);if(!arr.length){$('#planBody').innerHTML='<tr><td colspan="6">此日期尚無配送</td></tr>';return}
   let mins=11*60;
   $('#planBody').innerHTML=arr.map((r,idx)=>{if(idx>0)mins+=0;const arrival=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;mins+=r.service_minutes||0;const leave=`${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;return `<tr><td>${idx+1}</td><td>抵達 ${arrival}<br>離開 ${leave}</td><td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}</td><td>${esc(itemText(r.items))}</td><td>${r.service_minutes||0} 分鐘</td><td>${esc(r.requested_period)}<br>${esc(r.constraint_type)}</td></tr>`}).join('');
 };
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup()});
-$('#date').value=$('#pickupDate').value=$('#planDate').value=localDate();syncTime();
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks()});
+$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=localDate();syncTime();syncBlockTime();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
 </script>

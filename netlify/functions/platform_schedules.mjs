@@ -52,6 +52,81 @@ async function ensureMorningAvailable(db, body, excludeId = null) {
   }
 }
 
+
+function isAfternoonRequest(body) {
+  if (body.requested_period === "希望下午送達") return true;
+  if (body.constraint_type !== "硬性限制") return false;
+  const early = cleanTime(body.earliest_time);
+  const late = cleanTime(body.latest_time);
+  if (body.requested_period === "指定時間後" && early && early >= "12:00") return true;
+  if (body.requested_period === "指定時段" && early && early >= "12:00") return true;
+  if (body.requested_period === "指定時間前" && late && late > "12:00") return true;
+  return false;
+}
+
+function toMinutes(value) {
+  const t = cleanTime(value);
+  if (!t) return null;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function requestedRange(body) {
+  if (body.constraint_type !== "硬性限制") return null;
+  const early = toMinutes(body.earliest_time);
+  const late = toMinutes(body.latest_time);
+  if (body.requested_period === "指定時間後" && early !== null) return [early, 1440];
+  if (body.requested_period === "指定時間前" && late !== null) return [0, late];
+  if (body.requested_period === "指定時段" && early !== null && late !== null) return [early, late];
+  if (body.requested_period === "希望上午送達") return [0, 720];
+  if (body.requested_period === "希望下午送達") return [720, 1440];
+  return null;
+}
+
+function overlaps(aStart, aEnd, bStart, bEnd) {
+  return aStart < bEnd && bStart < aEnd;
+}
+
+async function ensureNotBlocked(db, body, excludeId = null) {
+  const { data: blocks, error } = await db
+    .from("schedule_blocks")
+    .select("id,block_type,start_time,end_time,reason")
+    .eq("block_date", body.delivery_date);
+  if (error) throw error;
+  const list = blocks || [];
+
+  const allDay = list.find(b => b.block_type === "all_day");
+  if (allDay) throw new Error(`此日期整天無法配送${allDay.reason ? `：${allDay.reason}` : ""}`);
+
+  const morningBlocked = list.some(b => b.block_type === "morning");
+  const afternoonBlocked = list.some(b => b.block_type === "afternoon");
+
+  if (isMorningRequest(body) && morningBlocked) {
+    throw new Error("此日期上午無法配送，請改選下午或其他日期");
+  }
+  if (isAfternoonRequest(body) && afternoonBlocked) {
+    throw new Error("此日期下午無法配送，請改選上午或其他日期");
+  }
+
+  const range = requestedRange(body);
+  if (range) {
+    const conflict = list.find(b => {
+      if (b.block_type !== "custom") return false;
+      const start = toMinutes(b.start_time) ?? 0;
+      const end = toMinutes(b.end_time) ?? 1440;
+      return overlaps(range[0], range[1], start, end);
+    });
+    if (conflict) throw new Error("客戶指定時間與自訂禁排時段衝突");
+  }
+
+  if (!isMorningRequest(body) && !isAfternoonRequest(body)) {
+    const existing = await activeForDate(db, body.delivery_date, excludeId);
+    const morningUsed = existing.some(isMorningRequest);
+    if (morningBlocked && afternoonBlocked) throw new Error("此日期上午與下午皆無法配送");
+    if (afternoonBlocked && morningUsed) throw new Error("此日期下午無法配送，且上午名額已使用");
+  }
+}
+
 async function nextOrder(db, date, excludeId = null) {
   const data = await activeForDate(db, date, excludeId);
   const used = new Set(data.map(x => x.delivery_order).filter(Boolean));
@@ -102,6 +177,7 @@ export default async req => {
       }
 
       await ensureMorningAvailable(db, body);
+      await ensureNotBlocked(db, body);
       const customerId = await insertCustomer(db, body.customer_name, body.customer_phone, body.delivery_address);
       const staffId = await upsertStaff(db, body.sales_name);
       const order = isMorningRequest(body)
@@ -142,6 +218,7 @@ export default async req => {
       if (!body.id) return response({ error: "缺少 id" }, 400);
 
       await ensureMorningAvailable(db, body, body.id);
+      await ensureNotBlocked(db, body, body.id);
       const staffId = await upsertStaff(db, body.sales_name);
 
       let order;
