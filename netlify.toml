@@ -1,0 +1,26 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/schedules"
+  to = "/.netlify/functions/schedules"
+  status = 200
+
+[[redirects]]
+  from = "/api/route"
+  to = "/.netlify/functions/route"
+  status = 200
+
+[[redirects]]
+  from = "/api/config"
+  to = "/.netlify/functions/config"
+  status = 200
+
+[[redirects]]
+  from = "/api/route-plan"
+  to = "/.netlify/functions/route-plan"
+  status = 200
