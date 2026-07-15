@@ -1,9 +1,9 @@
 {
-  "name": "delivery-scheduler-netlify",
-  "version": "1.0.0",
+  "name": "furniture-delivery-management",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@netlify/blobs": "^10.0.0"
+    "@supabase/supabase-js": "^2.49.1"
   }
 }

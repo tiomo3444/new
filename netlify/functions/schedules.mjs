@@ -1,7 +1,92 @@
-import { getStore } from "@netlify/blobs";
-import { randomUUID } from "node:crypto";
-const json=(data,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store"}});
-const store=()=>getStore({name:"delivery-schedules",consistency:"strong"});
-function authorized(req,bodyPin=""){const required=process.env.SHARED_PIN;return !required||req.headers.get("x-shared-pin")===required||bodyPin===required}
-function label(body){if(body.timeSlot==="指定時間後")return `${body.earliestTime||""} 後`;if(body.timeSlot==="指定時段")return `${body.earliestTime||""}–${body.latestTime||""}`;return body.timeSlot||"不限時段"}
-export default async req=>{try{const db=store();if(req.method==="GET"){if(!authorized(req))return json({error:"PIN 錯誤"},401);const {blobs=[]}=await db.list({prefix:"schedule-"});const rows=[];for(const b of blobs){const v=await db.get(b.key,{type:"json",consistency:"strong"});if(v)rows.push(v)}rows.sort((a,b)=>`${a.date} ${a.sortTime}`.localeCompare(`${b.date} ${b.sortTime}`));return json(rows)}const body=await req.json();if(!authorized(req,body.pin))return json({error:"PIN 錯誤"},401);if(req.method==="POST"){for(const f of ["date","timeSlot","customerName","address","salesperson"]){if(!String(body[f]||"").trim())return json({error:`缺少欄位：${f}`},400)}if(!Array.isArray(body.productItems)||!body.productItems.length)return json({error:"請至少選擇一個商品"},400);if(body.productItems.some(i=>!i.pickupAddress))return json({error:"每個商品都必須有撿貨地址"},400);const id=randomUUID();const service=Math.max(0,Number(body.serviceMinutes||0));const row={id,date:body.date,timeSlot:body.timeSlot,constraintType:body.constraintType||"preferred",earliestTime:body.earliestTime||"",latestTime:body.latestTime||"",timeLabel:label(body),sortTime:body.earliestTime||(body.timeSlot==="上午時段"?"09:00":body.timeSlot==="下午時段"?"13:00":"18:00"),customerName:String(body.customerName).trim(),address:String(body.address).trim(),salesperson:String(body.salesperson).trim(),phone:String(body.phone||"").trim(),note:String(body.note||"").trim(),productItems:body.productItems,products:body.products||body.productItems.map(i=>`${i.name}×${i.quantity}`).join("、"),serviceMinutes:service,travelMinutes:Number(body.travelMinutes||0),distanceKm:Number(body.distanceKm||0),status:body.status||"待確認",routeOrder:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};await db.setJSON(`schedule-${id}`,row);return json(row,201)}if(req.method==="PUT"){if(!body.id)return json({error:"缺少 id"},400);const key=`schedule-${body.id}`,existing=await db.get(key,{type:"json",consistency:"strong"});if(!existing)return json({error:"找不到資料"},404);const merged={...existing,...body,id:existing.id,serviceMinutes:Math.max(0,Number(body.serviceMinutes??existing.serviceMinutes??0)),updatedAt:new Date().toISOString()};await db.setJSON(key,merged);return json(merged)}if(req.method==="DELETE"){if(!body.id)return json({error:"缺少 id"},400);await db.delete(`schedule-${body.id}`);return json({ok:true})}return json({error:"Method not allowed"},405)}catch(e){return json({error:e.message||"系統錯誤"},500)}};
+import { response,authorized,supabase } from "./_common.mjs";
+
+async function upsertStaff(db,name){
+  const {data:found}=await db.from("staff").select("id").eq("name",name).maybeSingle();
+  if(found?.id)return found.id;
+  const {data,error}=await db.from("staff").insert({name}).select("id").single();
+  if(error)throw error;return data.id;
+}
+async function insertCustomer(db,name,phone,address){
+  const {data,error}=await db.from("customers").insert({name,phone:phone||null,address}).select("id").single();
+  if(error)throw error;return data.id;
+}
+async function nextOrder(db,date,excludeId=null){
+  let q=db.from("deliveries").select("delivery_order").eq("delivery_date",date).neq("status","已取消");
+  if(excludeId)q=q.neq("id",excludeId);
+  const {data,error}=await q;if(error)throw error;
+  const used=new Set((data||[]).map(x=>x.delivery_order).filter(Boolean));
+  for(let i=1;i<=6;i++)if(!used.has(i))return i;
+  return null;
+}
+async function overview(db){
+  const {data,error}=await db.from("delivery_overview").select("*").order("delivery_date",{ascending:true}).order("delivery_order",{ascending:true,nullsFirst:false});
+  if(error)throw error;return data||[];
+}
+
+export default async req=>{
+  try{
+    if(!authorized(req))return response({error:"PIN 錯誤"},401);
+    const db=supabase();
+    if(req.method==="GET")return response(await overview(db));
+    const body=await req.json();
+    if(req.method==="POST"){
+      for(const f of ["delivery_date","customer_name","delivery_address","sales_name"]){if(!String(body[f]||"").trim())return response({error:`缺少欄位：${f}`},400)}
+      if(!Array.isArray(body.items)||!body.items.length)return response({error:"請至少選擇一個商品"},400);
+      const customerId=await insertCustomer(db,body.customer_name,body.customer_phone,body.delivery_address);
+      const staffId=await upsertStaff(db,body.sales_name);
+      const order=await nextOrder(db,body.delivery_date);
+      const payload={
+        customer_id:customerId,customer_name_snapshot:body.customer_name,customer_phone_snapshot:body.customer_phone||null,delivery_address_snapshot:body.delivery_address,
+        sales_staff_id:staffId,sales_name_snapshot:body.sales_name,delivery_date:body.delivery_date,delivery_order:order,
+        requested_period:body.requested_period||"無指定",constraint_type:body.constraint_type||"優先條件",earliest_time:body.earliest_time||null,latest_time:body.latest_time||null,
+        service_minutes:Number(body.service_minutes||0),status:body.status||"待確認",notes:body.notes||null
+      };
+      const {data:delivery,error}=await db.from("deliveries").insert(payload).select("id").single();if(error)throw error;
+      const items=body.items.map(i=>({...i,delivery_id:delivery.id}));
+      const {error:itemError}=await db.from("delivery_items").insert(items);
+      if(itemError){await db.from("deliveries").delete().eq("id",delivery.id);throw itemError}
+      return response({ok:true,id:delivery.id},201);
+    }
+    if(req.method==="PUT"){
+      if(!body.id)return response({error:"缺少 id"},400);
+      const staffId=await upsertStaff(db,body.sales_name);
+      let order=body.delivery_order||await nextOrder(db,body.delivery_date,body.id);
+      const payload={
+        customer_name_snapshot:body.customer_name,customer_phone_snapshot:body.customer_phone||null,delivery_address_snapshot:body.delivery_address,
+        sales_staff_id:staffId,sales_name_snapshot:body.sales_name,delivery_date:body.delivery_date,delivery_order:order,
+        requested_period:body.requested_period||"無指定",constraint_type:body.constraint_type||"優先條件",earliest_time:body.earliest_time||null,latest_time:body.latest_time||null,
+        service_minutes:Number(body.service_minutes||0),status:body.status||"待確認",notes:body.notes||null
+      };
+      const {data:updated,error}=await db.from("deliveries")
+        .update(payload)
+        .eq("id",body.id)
+        .select("id,status,delivery_date,delivery_order")
+        .single();
+      if(error)throw error;
+      if(!updated?.id)throw new Error("找不到要更新的配送資料");
+      const {error:delError}=await db.from("delivery_items").delete().eq("delivery_id",body.id);if(delError)throw delError;
+      const items=(body.items||[]).map(i=>({...i,delivery_id:body.id}));
+      if(items.length){const {error:itemError}=await db.from("delivery_items").insert(items);if(itemError)throw itemError}
+      return response({ok:true,delivery:updated});
+    }
+    if(req.method==="PATCH"){
+      if(!body.id)return response({error:"缺少 id"},400);
+      const allowed=["待確認","已確認","需改期","配送中","已完成","已取消"];
+      if(!allowed.includes(body.status))return response({error:"無效的配送狀態"},400);
+      const {data:updated,error}=await db.from("deliveries")
+        .update({status:body.status})
+        .eq("id",body.id)
+        .select("id,status")
+        .single();
+      if(error)throw error;
+      if(!updated?.id)throw new Error("找不到要更新的配送資料");
+      return response({ok:true,delivery:updated});
+    }
+    if(req.method==="DELETE"){
+      if(!body.id)return response({error:"缺少 id"},400);
+      const {error}=await db.from("deliveries").delete().eq("id",body.id);if(error)throw error;
+      return response({ok:true});
+    }
+    return response({error:"Method not allowed"},405);
+  }catch(e){return response({error:e.message||"系統錯誤"},500)}
+};
