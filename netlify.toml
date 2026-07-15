@@ -29,3 +29,8 @@
   from = "/api/v5/blocks"
   to = "/.netlify/functions/platform_blocks"
   status = 200
+
+[[redirects]]
+  from = "/api/v6/route-events"
+  to = "/.netlify/functions/platform_route_events"
+  status = 200

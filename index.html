@@ -117,6 +117,51 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 }
 .mobile-block-alert.all-day{background:#A84F45}
 
+
+/* V6：單車路線與返回疊貨 */
+.reload-marker{
+  padding:7px 9px;
+  margin:5px 0;
+  border-radius:9px;
+  background:#D2AB80;
+  border:1px solid #B98D5F;
+  color:#5B452C;
+  font-size:11px;
+  font-weight:900;
+}
+.reload-marker small{display:block;font-weight:700;margin-top:2px}
+.route-reload-row td{
+  background:#F3DFCA!important;
+  border-top:2px solid #D2AB80;
+  border-bottom:2px solid #D2AB80;
+  color:#5B452C;
+  font-weight:900;
+}
+.reload-card{
+  border-left:6px solid #D2AB80;
+  background:#F3DFCA;
+  border-radius:12px;
+  padding:12px;
+  margin:8px 0;
+  color:#5B452C;
+}
+.quick-route-box{
+  margin-top:14px;
+  padding:14px;
+  border-radius:14px;
+  background:#F3DFCA;
+  border:1px solid #D2AB80;
+}
+.quick-route-box h3{margin-top:0;color:#725C3A}
+.mobile-reload-marker{
+  border-left:5px solid #D2AB80;
+  background:#F3DFCA;
+  color:#5B452C;
+  border-radius:12px;
+  padding:11px;
+  font-weight:900;
+}
+
 @media(max-width:780px){
 .grid,.grid3,.summary,.product-picker{grid-template-columns:1fr}
 .item-row{grid-template-columns:1fr 1fr}
@@ -130,7 +175,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V5.3 月曆禁排醒目版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V6 單車路線完整版</div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button class="tab active" data-tab="dashboard">今日配送</button>
@@ -174,15 +219,55 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="actions"><button class="btn" id="saveBtn" type="submit">儲存配送安排</button><button class="btn alt" type="reset">清除</button><button class="btn alt" id="cancelEdit" type="button" style="display:none">取消編輯</button></div>
 </form></div></section>
 
-<section id="calendar" class="panel"><div class="card"><div class="calendar-head"><button class="btn alt" id="prevMonth">‹ 上月</button><h2 id="monthTitle"></h2><button class="btn alt" id="nextMonth">下月 ›</button></div><div id="calendarGrid"></div><div id="mobileCalendar" class="mobile-calendar"></div><div class="help">第一組預設 11:00；硬性限制顯示指定時間；其餘顯示「待安排後通知」。上午配送每日限一組。</div></div></section>
+<section id="calendar" class="panel"><div class="card"><div class="calendar-head"><button class="btn alt" id="prevMonth">‹ 上月</button><h2 id="monthTitle"></h2><button class="btn alt" id="nextMonth">下月 ›</button></div><div id="calendarGrid"></div><div id="mobileCalendar" class="mobile-calendar"></div><div class="help">第一組預設 11:00；硬性限制顯示指定時間；其餘顯示「待通知」。橘棕色代表中途返回疊貨。</div></div></section>
 
 <section id="pickup" class="panel"><div class="card"><h2>物流撿貨表</h2><div class="grid"><div><label>撿貨日期</label><input id="pickupDate" type="date"></div><div class="actions" style="align-self:end"><button class="btn" id="refreshPickup">重新整理</button></div></div><div id="pickupContent" style="margin-top:16px"></div></div></section>
 
 <section id="list" class="panel"><div class="summary" id="metrics"></div><div class="card list"><table><thead><tr><th>日期／順序</th><th>客戶／地址</th><th>商品與撿貨點</th><th>卸貨組裝</th><th>業務</th><th>狀態</th><th>操作</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
 
-<section id="routePlan" class="panel"><div class="card"><h2>每日配送路線</h2><div class="grid"><div><label>配送日期</label><input id="planDate" type="date"></div><div><label>第一組最早抵達時間</label><input value="11:00" readonly></div></div>
-<div class="notice">目前先依第 1～6 組順序與業務填寫的卸貨組裝分鐘推算。免費車程 API 將在下一階段加入。</div>
-<button class="btn" id="planBtn">產生時間表</button><div class="list" style="margin-top:12px"><table><thead><tr><th>順序</th><th>抵達／離開</th><th>客戶</th><th>商品</th><th>作業時間</th><th>時段條件</th></tr></thead><tbody id="planBody"><tr><td colspan="6">尚未產生路線</td></tr></tbody></table></div></div></section>
+<section id="routePlan" class="panel">
+<div class="card">
+<h2>每日單車配送路線</h2>
+<div class="grid">
+  <div><label>配送日期</label><input id="planDate" type="date"></div>
+  <div><label>第一組最早抵達時間</label><input value="11:00" readonly></div>
+</div>
+<div class="notice">每天只有一台車：高雄倉庫出發，依第 1～6 組順序配送。返回門市疊貨會插入成正式路線站點。</div>
+
+<div class="quick-route-box">
+<h3>快速新增返回疊貨</h3>
+<div class="grid">
+  <div><label>插入位置</label><select id="reloadAfterOrder">
+    <option value="0">出發後、第一組前</option>
+    <option value="1">第 1 組後</option>
+    <option value="2">第 2 組後</option>
+    <option value="3">第 3 組後</option>
+    <option value="4">第 4 組後</option>
+    <option value="5">第 5 組後</option>
+    <option value="6">第 6 組後</option>
+  </select></div>
+  <div><label>疊貨地點</label><select id="reloadLocation">
+    <option value="台南門市">台南門市｜台南市東區崇善路762號</option>
+    <option value="台南倉庫">台南倉庫｜台南市東區自由路一段8號</option>
+    <option value="高雄倉庫">高雄倉庫｜高雄市仁武區成功路152號</option>
+  </select></div>
+  <div class="full"><label>備註</label><input id="reloadNote" placeholder="例如：補載第二批沙發、取餐桌"></div>
+</div>
+<button class="btn" id="addReloadBtn">↩ 新增返回疊貨</button>
+</div>
+
+<div class="actions" style="margin-top:14px">
+  <button class="btn" id="planBtn">重新整理路線</button>
+</div>
+<div class="list" style="margin-top:12px">
+<table>
+<thead><tr><th>順序</th><th>時間</th><th>站點</th><th>商品／說明</th><th>作業時間</th><th>條件</th></tr></thead>
+<tbody id="planBody"><tr><td colspan="6">尚未產生路線</td></tr></tbody>
+</table>
+</div>
+<div id="reloadList" style="margin-top:14px"></div>
+</div>
+</section>
 
 
 <section id="blocks" class="panel">
@@ -220,7 +305,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 <script>
 const $=s=>document.querySelector(s);
-let products=[],locations=[],rows=[],blocks=[],currentMonth=new Date(),selectedMobileDate="";
+let products=[],locations=[],rows=[],blocks=[],routeEvents=[],currentMonth=new Date(),selectedMobileDate="";
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const headers=()=>({'Content-Type':'application/json'});
 const localDate=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -277,7 +362,17 @@ async function loadConfig(){
 }
 async function load(){
   document.body.classList.add('loading');
-  try{rows=await api('/api/v5/schedules');renderAll()}
+  try{
+    const [scheduleData,blockData,eventData]=await Promise.all([
+      api('/api/v5/schedules'),
+      api('/api/v5/blocks'),
+      api('/api/v6/route-events')
+    ]);
+    rows=Array.isArray(scheduleData)?scheduleData:[];
+    blocks=Array.isArray(blockData)?blockData:[];
+    routeEvents=Array.isArray(eventData)?eventData:[];
+    renderAll();
+  }
   catch(e){toast(e.message)}
   finally{document.body.classList.remove('loading')}
 }
@@ -291,6 +386,26 @@ function districtOf(address){
   return m2?m2[1]:'未辨識地區';
 }
 function displayName(r){return `${r.sales_name||''} ${r.customer_name||''}`.trim()}
+
+function routeEventsForDate(date){
+  return routeEvents
+    .filter(e=>e.event_date===date)
+    .sort((a,b)=>(a.after_order||0)-(b.after_order||0)||String(a.created_at).localeCompare(String(b.created_at)));
+}
+function routeLocationAddress(name){
+  if(name==='台南門市')return '台南市東區崇善路762號';
+  if(name==='台南倉庫')return '台南市東區自由路一段8號';
+  if(name==='高雄倉庫')return '高雄市仁武區成功路152號';
+  return '';
+}
+function reloadMarkerHtml(date,afterOrder,mobile=false){
+  const events=routeEventsForDate(date).filter(e=>Number(e.after_order)===Number(afterOrder));
+  return events.map(e=>{
+    const cls=mobile?'mobile-reload-marker':'reload-marker';
+    return `<div class="${cls}">↩ 回${esc(e.location_name)}疊貨${e.note?`<small>${esc(e.note)}</small>`:''}</div>`;
+  }).join('');
+}
+
 function statusClass(s){return `status-${s||'待確認'}`}
 
 function statusDisplay(s){return s==='需改期'?'⚠ 需改期':s}
@@ -395,14 +510,14 @@ function calendarTimeLabel(r,index){
   const hard=hardConstraintLabel(r);
   if(hard)return hard;
   if(index===0)return '11:00';
-  return '待安排後通知';
+  return '待通知';
 }
 function dateHasOtherMorning(date,excludeId=''){
   return rows.some(r=>r.delivery_date===date && r.id!==excludeId && r.status!=='已取消' && isMorningRequest(r));
 }
 
 function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已取消').sort((a,b)=>(a.delivery_order||99)-(b.delivery_order||99)||String(a.created_at).localeCompare(String(b.created_at)))}
-function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();updateDateBlockWarning()}
+function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();renderRoutePlan();updateDateBlockWarning()}
 
 $('#scheduleForm').onsubmit=async e=>{
   e.preventDefault();
@@ -484,12 +599,13 @@ function renderMobileCalendar(){
   const selectedBlocks=blocksForDate(selectedMobileDate);
   const selected=new Date(`${selectedMobileDate}T00:00:00`);
   const weekday=['日','一','二','三','四','五','六'][selected.getDay()];
-  let slots='';
+  let slots=reloadMarkerHtml(selectedMobileDate,0,true);
   for(let i=0;i<6;i++){
     const r=arr[i];
     slots+=r
       ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">🚚 第 ${i+1} 組｜${esc(calendarTimeLabel(r,i))} ${rescheduleFlag(r)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 組</b></div>`;
+    slots+=reloadMarkerHtml(selectedMobileDate,i+1,true);
   }
   $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div>${calendarBlockHtml(selectedMobileDate,true)}<div class="mobile-slots">${slots}</div>`;
   $('#mobileCalendar').querySelectorAll('.mobile-date-btn').forEach(btn=>{btn.onclick=()=>{selectedMobileDate=btn.dataset.date;renderMobileCalendar();};});
@@ -505,10 +621,11 @@ function renderCalendar(){
     const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const arr=dayRows(ds);
     const blocked=blocksForDate(ds).length>0,allDay=hasAllDayBlock(ds);
-    html+=`<div class="day ${d.getMonth()!==m?'other':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''}"><div class="dateNo">${d.getDate()}</div>${calendarBlockHtml(ds,false)}`;
+    html+=`<div class="day ${d.getMonth()!==m?'other':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''}"><div class="dateNo">${d.getDate()}</div>${calendarBlockHtml(ds,false)}${reloadMarkerHtml(ds,0,false)}`;
     for(let s=0;s<6;s++){
       const r=arr[s];
       html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(calendarTimeLabel(r,s))}｜${esc(displayName(r))} ${rescheduleFlag(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
+      html+=reloadMarkerHtml(ds,s+1,false);
     }
     html+='</div>';
   }
@@ -604,13 +721,93 @@ window.deleteBlock=async id=>{
   catch(e){toast(e.message)}
 };
 
-$('#planBtn').onclick=()=>{
-  const arr=dayRows($('#planDate').value);if(!arr.length){$('#planBody').innerHTML='<tr><td colspan="6">此日期尚無配送</td></tr>';return}
-  let mins=11*60;
-  $('#planBody').innerHTML=arr.map((r,idx)=>{if(idx>0)mins+=0;const arrival=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;mins+=r.service_minutes||0;const leave=`${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;return `<tr><td>${idx+1}</td><td>抵達 ${arrival}<br>離開 ${leave}</td><td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}</td><td>${esc(itemText(r.items))}</td><td>${r.service_minutes||0} 分鐘</td><td>${esc(r.requested_period)}<br>${esc(r.constraint_type)}</td></tr>`}).join('');
-};
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks()});
+function formatMinutes(mins){
+  const safe=((mins%1440)+1440)%1440;
+  return `${String(Math.floor(safe/60)).padStart(2,'0')}:${String(safe%60).padStart(2,'0')}`;
+}
+function renderRoutePlan(){
+  const date=$('#planDate')?.value;
+  if(!date || !$('#planBody'))return;
+  const arr=dayRows(date);
+  const events=routeEventsForDate(date);
+  let mins=11*60;
+  const routeRows=[];
+
+  const appendEvents=(afterOrder)=>{
+    events.filter(e=>Number(e.after_order)===Number(afterOrder)).forEach(e=>{
+      routeRows.push(`<tr class="route-reload-row">
+        <td>↩</td>
+        <td>時間待路線計算</td>
+        <td>回${esc(e.location_name)}疊貨<br><small>${esc(e.location_address||routeLocationAddress(e.location_name))}</small></td>
+        <td>${esc(e.note||'重新疊貨')}</td>
+        <td>待設定</td>
+        <td>中途返回站點</td>
+      </tr>`);
+    });
+  };
+
+  appendEvents(0);
+  arr.forEach((r,idx)=>{
+    const arrival=idx===0?'11:00':calendarTimeLabel(r,idx);
+    const leave=idx===0?formatMinutes(mins+(r.service_minutes||0)):'待路線計算';
+    if(idx===0)mins+=r.service_minutes||0;
+    routeRows.push(`<tr>
+      <td>第 ${idx+1} 組</td>
+      <td>抵達 ${esc(arrival)}<br>離開 ${esc(leave)}</td>
+      <td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}</td>
+      <td>${esc(itemText(r.items))}</td>
+      <td>${r.service_minutes||0} 分鐘</td>
+      <td>${esc(r.requested_period)}<br>${esc(r.constraint_type)}</td>
+    </tr>`);
+    appendEvents(idx+1);
+  });
+
+  $('#planBody').innerHTML=routeRows.length?routeRows.join(''):'<tr><td colspan="6">此日期尚無配送或返回疊貨站點</td></tr>';
+  renderReloadList();
+}
+function renderReloadList(){
+  if(!$('#reloadList'))return;
+  const date=$('#planDate').value;
+  const list=routeEventsForDate(date);
+  $('#reloadList').innerHTML=list.length
+    ? `<h3>當日返回疊貨站點</h3>${list.map(e=>`<div class="reload-card">
+        <b>↩ ${Number(e.after_order)===0?'第一組前':`第 ${e.after_order} 組後`}｜回${esc(e.location_name)}疊貨</b>
+        <div>${esc(e.location_address||routeLocationAddress(e.location_name))}</div>
+        ${e.note?`<small>${esc(e.note)}</small>`:''}
+        <div class="actions" style="margin-top:8px"><button class="btn danger" onclick="deleteRouteEvent('${e.id}')">刪除站點</button></div>
+      </div>`).join('')}`
+    : '';
+}
+$('#addReloadBtn').onclick=async()=>{
+  const locationName=$('#reloadLocation').value;
+  const body={
+    event_date:$('#planDate').value,
+    after_order:Number($('#reloadAfterOrder').value),
+    event_type:'reload',
+    location_name:locationName,
+    location_address:routeLocationAddress(locationName),
+    note:$('#reloadNote').value.trim()
+  };
+  try{
+    await api('/api/v6/route-events',{method:'POST',body:JSON.stringify(body)});
+    $('#reloadNote').value='';
+    toast(`已新增：回${locationName}疊貨`);
+    await load();
+  }catch(e){toast(e.message)}
+};
+window.deleteRouteEvent=async id=>{
+  if(!confirm('確定刪除這個返回疊貨站點？'))return;
+  try{
+    await api('/api/v6/route-events',{method:'DELETE',body:JSON.stringify({id})});
+    toast('已刪除返回疊貨站點');
+    await load();
+  }catch(e){toast(e.message)}
+};
+$('#planBtn').onclick=renderRoutePlan;
+$('#planDate').onchange=renderRoutePlan;
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan')renderRoutePlan()});
 $('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=localDate();syncTime();syncBlockTime();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
