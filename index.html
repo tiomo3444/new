@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>家具配送管理系統</title>
+<title>裏物傢俱配送管理平台</title>
 <style>
 :root{--brand:#315f63;--brand2:#e3efee;--ink:#26383d;--muted:#6f7d83;--line:#d8e1e2;--bg:#f5f7f7;--warn:#fff2cf;--ok:#e4f3e9;--danger:#fee6e3}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink)}
@@ -27,6 +27,8 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 .status-select{min-width:100px;padding:7px 8px;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:var(--warn)}.badge.ok{background:var(--ok)}.pickup-group{margin-bottom:18px}.pickup-title{background:#edf3f3;padding:10px;border-radius:10px;font-weight:900;margin-bottom:8px}
 .checkline{display:flex;gap:8px;align-items:flex-start}.checkline input{width:auto;margin-top:3px}.toast{position:fixed;right:16px;bottom:16px;background:#26383c;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:20}
 .loading{opacity:.6;pointer-events:none}
+.today-list{display:grid;gap:10px}.today-card{border:1px solid var(--line);border-left:6px solid var(--brand);border-radius:13px;padding:13px;background:#fff}.today-card.status-待確認{border-left-color:#d19b1a;background:#fff9e8}.today-card.status-已確認{border-left-color:#38875a;background:#edf8f1}.today-card.status-配送中{border-left-color:#3478b8;background:#edf5fc}.today-card.status-已完成{border-left-color:#626b70;background:#f0f2f3}.today-main{font-size:17px;font-weight:900}.today-meta{margin-top:5px;color:var(--muted);font-size:13px}
+.slot.status-待確認,.mobile-slot.status-待確認{background:#fff2cf;border-left-color:#d19b1a}.slot.status-已確認,.mobile-slot.status-已確認{background:#e4f3e9;border-left-color:#38875a}.slot.status-配送中,.mobile-slot.status-配送中{background:#e6f1fb;border-left-color:#3478b8}.slot.status-已完成,.mobile-slot.status-已完成{background:#eceff0;border-left-color:#687176;color:#596267}.district-tag{display:inline-block;padding:2px 6px;border-radius:999px;background:#fff;border:1px solid #cbd6d8;font-size:10px;margin-left:4px}
 
 .mobile-calendar{display:none}
 .mobile-date-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
@@ -57,18 +59,24 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>家具配送管理系統</h1><div class="sub">V3.3｜商品欄修正版</div></div></header>
+<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">V4｜正式共用版</div></div></header>
 <main class="wrap">
 <div class="tabs">
-<button class="tab active" data-tab="form">新增配送</button>
+<button class="tab active" data-tab="dashboard">今日配送</button>
+<button class="tab" data-tab="form">新增配送</button>
 <button class="tab" data-tab="calendar">月曆排程</button>
 <button class="tab" data-tab="pickup">物流撿貨表</button>
 <button class="tab" data-tab="list">配送清單</button>
 <button class="tab" data-tab="routePlan">每日路線</button>
-<button class="tab" data-tab="settings">系統設定</button>
+<button class="tab" data-tab="settings">固定地點</button>
 </div>
 
-<section id="form" class="panel active">
+<section id="dashboard" class="panel active">
+<div class="summary" id="todayMetrics"></div>
+<div class="card"><h2 id="todayTitle">今日配送</h2><div id="todayDeliveries" class="today-list"></div></div>
+</section>
+
+<section id="form" class="panel">
 <div class="card"><h2 id="formTitle">新增配送安排</h2>
 <form id="scheduleForm"><input id="editingId" type="hidden">
 <div class="grid">
@@ -104,10 +112,9 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="notice">目前先依第 1～6 組順序與業務填寫的卸貨組裝分鐘推算。免費車程 API 將在下一階段加入。</div>
 <button class="btn" id="planBtn">產生時間表</button><div class="list" style="margin-top:12px"><table><thead><tr><th>順序</th><th>抵達／離開</th><th>客戶</th><th>商品</th><th>作業時間</th><th>時段條件</th></tr></thead><tbody id="planBody"><tr><td colspan="6">尚未產生路線</td></tr></tbody></table></div></div></section>
 
-<section id="settings" class="panel"><div class="card"><h2>系統設定</h2>
+<section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
 <div class="grid3"><div><label>高雄倉庫</label><input value="高雄市仁武區成功路152號" readonly></div><div><label>台南倉庫</label><input value="台南市東區自由路一段8號" readonly></div><div><label>台南門市</label><input value="台南市東區崇善路762號" readonly></div></div>
-<div class="grid" style="margin-top:14px"><div><label>共用 PIN</label><input id="pinInput" type="password" placeholder="Netlify 的 SHARED_PIN"></div></div><button class="btn" id="saveSettings">儲存 PIN</button>
-<div class="notice">Supabase 金鑰只放在 Netlify 後端環境變數，不會顯示在同仁瀏覽器。</div>
+<div class="notice">本版本已取消共用 PIN，開啟公司網址即可使用。Supabase 管理金鑰仍只存放在 Netlify 後端。</div>
 </div></section>
 </main>
 <div class="toast" id="toast"></div>
@@ -116,8 +123,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 const $=s=>document.querySelector(s);
 let products=[],locations=[],rows=[],currentMonth=new Date(),selectedMobileDate="";
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const pin=()=>localStorage.getItem('deliveryPin')||'';
-const headers=()=>({'Content-Type':'application/json','x-shared-pin':pin()});
+const headers=()=>({'Content-Type':'application/json'});
 const localDate=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function toast(msg){let t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 async function api(url,opt={}){let r=await fetch(url,{...opt,headers:{...headers(),...(opt.headers||{})}});let d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
@@ -173,8 +179,18 @@ async function load(){
   finally{document.body.classList.remove('loading')}
 }
 function itemText(items){return (items||[]).map(i=>`${i.product_name}×${i.quantity}`).join('、')}
+function compactItemText(items){const a=items||[];if(!a.length)return '';return a.length===1?`${a[0].product_name}×${a[0].quantity}`:`${a[0].product_name}＋${a.length-1}`}
+function districtOf(address){
+  const a=String(address||'').replace(/臺/g,'台');
+  const m=a.match(/(?:市|縣)([^市縣區鄉鎮]{1,5}(?:區|鄉|鎮|市))/);
+  if(m)return m[1].replace(/區$/,'區').replace(/鄉$/,'鄉').replace(/鎮$/,'鎮');
+  const m2=a.match(/([一-鿿]{1,5}(?:區|鄉|鎮|市))/);
+  return m2?m2[1]:'未辨識地區';
+}
+function displayName(r){return `${r.sales_name||''} ${r.customer_name||''}`.trim()}
+function statusClass(s){return `status-${s||'待確認'}`}
 function dayRows(ds){return rows.filter(r=>r.delivery_date===ds&&r.status!=='已取消').sort((a,b)=>(a.delivery_order||99)-(b.delivery_order||99)||String(a.created_at).localeCompare(String(b.created_at)))}
-function renderAll(){renderCalendar();renderList();renderPickup()}
+function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup()}
 
 $('#scheduleForm').onsubmit=async e=>{
   e.preventDefault();
@@ -209,6 +225,22 @@ $('#scheduleForm').onsubmit=async e=>{
 function dateString(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function renderDashboard(){
+  const today=localDate();
+  const arr=dayRows(today);
+  $('#todayTitle').textContent=`今日配送｜${today.replaceAll('-','/')}`;
+  $('#todayMetrics').innerHTML=[
+    ['今日組數',arr.length],
+    ['待確認',arr.filter(r=>r.status==='待確認').length],
+    ['配送中',arr.filter(r=>r.status==='配送中').length],
+    ['已完成',arr.filter(r=>r.status==='已完成').length]
+  ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
+  $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}">
+    <div class="today-main">第 ${i+1} 組｜${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}｜${esc(displayName(r))}</div>
+    <div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(r.status)}</div>
+  </div>`).join(''):'今天尚無配送安排';
+}
+
 function renderMobileCalendar(){
   const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
   const today=localDate();
@@ -229,7 +261,7 @@ function renderMobileCalendar(){
   for(let i=0;i<6;i++){
     const r=arr[i];
     slots+=r
-      ? `<div class="mobile-slot filled ${r.status==='待確認'?'pending':''}"><div class="mobile-slot-head">第 ${i+1} 組｜${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}</div><div><b>${esc(r.customer_name)}</b></div><div class="mobile-slot-meta">${esc(itemText(r.items))}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
+      ? `<div class="mobile-slot filled ${statusClass(r.status)}"><div class="mobile-slot-head">第 ${i+1} 組｜${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}</div><div><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span></div><div class="mobile-slot-meta">${esc(compactItemText(r.items))}｜${esc(r.status)}</div><div class="mobile-slot-meta">${esc(r.delivery_address)}</div></div>`
       : `<div class="mobile-slot empty"><b>第 ${i+1} 組</b></div>`;
   }
   $('#mobileCalendar').innerHTML=`<div class="mobile-date-strip">${strip}</div><div class="mobile-day-title">${selected.getMonth()+1}/${selected.getDate()} 星期${weekday}</div><div class="mobile-slots">${slots}</div>`;
@@ -248,7 +280,7 @@ function renderCalendar(){
     html+=`<div class="day ${d.getMonth()!==m?'other':''}"><div class="dateNo">${d.getDate()}</div>`;
     for(let s=0;s<6;s++){
       const r=arr[s];
-      html+=r?`<div class="slot filled ${r.status==='待確認'?'pending':''}"><span class="slotno">${s+1}.</span> ${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}｜${esc(r.customer_name)}<br>${esc(itemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
+      html+=r?`<div class="slot filled ${statusClass(r.status)}"><span class="slotno">${s+1}.</span> ${esc(r.estimated_arrival||r.earliest_time||r.requested_period)}｜${esc(displayName(r))}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span> ${esc(compactItemText(r.items))}</div>`:`<div class="slot"><span class="slotno">${s+1}.</span></div>`;
     }
     html+='</div>';
   }
@@ -263,7 +295,7 @@ function renderList(){
   $('#metrics').innerHTML=[['全部',rows.length],['待確認',rows.filter(r=>r.status==='待確認').length],['已確認',rows.filter(r=>r.status==='已確認').length],['本月',active.filter(r=>r.delivery_date.startsWith(new Date().toISOString().slice(0,7))).length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
   $('#tbody').innerHTML=rows.map(r=>`<tr>
     <td>${esc(r.delivery_date)}<br>第 ${r.delivery_order||'-'} 組<br>${esc(r.requested_period)}</td>
-    <td><b>${esc(r.customer_name)}</b><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}</td>
+    <td><b>${esc(displayName(r))}</b> <span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}</td>
     <td>${(r.items||[]).map(i=>`${esc(i.product_name)}×${i.quantity}<br><small>${esc(i.pickup_location_name)}${i.custom_pickup_address?`｜${esc(i.custom_pickup_address)}`:''}</small>`).join('<hr>')}</td>
     <td>${r.service_minutes||0} 分鐘</td><td>${esc(r.sales_name)}</td>
     <td><select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">
@@ -301,7 +333,7 @@ window.editRow=id=>{
 
 function renderPickup(){
   const ds=$('#pickupDate').value||localDate(),arr=dayRows(ds),groups={};
-  arr.forEach((r,idx)=>(r.items||[]).forEach(i=>{const key=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');(groups[key]??=[]).push({...i,customer_name:r.customer_name,order:r.delivery_order||idx+1})}));
+  arr.forEach((r,idx)=>(r.items||[]).forEach(i=>{const key=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');(groups[key]??=[]).push({...i,customer_name:displayName(r),order:r.delivery_order||idx+1})}));
   $('#pickupContent').innerHTML=Object.keys(groups).length?Object.entries(groups).map(([loc,items])=>`<div class="pickup-group"><div class="pickup-title">${esc(loc)}</div>${items.map(i=>`<div class="checkline"><input type="checkbox" ${i.picked?'checked':''} disabled><div><b>第 ${i.order} 組｜${esc(i.customer_name)}</b>：${esc(i.product_name)} × ${i.quantity}${i.item_notes?`｜${esc(i.item_notes)}`:''}</div></div>`).join('')}</div>`).join(''):'此日期尚無撿貨資料';
 }
 $('#refreshPickup').onclick=renderPickup;$('#pickupDate').onchange=renderPickup;
@@ -309,12 +341,11 @@ $('#refreshPickup').onclick=renderPickup;$('#pickupDate').onchange=renderPickup;
 $('#planBtn').onclick=()=>{
   const arr=dayRows($('#planDate').value);if(!arr.length){$('#planBody').innerHTML='<tr><td colspan="6">此日期尚無配送</td></tr>';return}
   let mins=11*60;
-  $('#planBody').innerHTML=arr.map((r,idx)=>{if(idx>0)mins+=0;const arrival=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;mins+=r.service_minutes||0;const leave=`${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;return `<tr><td>${idx+1}</td><td>抵達 ${arrival}<br>離開 ${leave}</td><td><b>${esc(r.customer_name)}</b><br>${esc(r.delivery_address)}</td><td>${esc(itemText(r.items))}</td><td>${r.service_minutes||0} 分鐘</td><td>${esc(r.requested_period)}<br>${esc(r.constraint_type)}</td></tr>`}).join('');
+  $('#planBody').innerHTML=arr.map((r,idx)=>{if(idx>0)mins+=0;const arrival=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;mins+=r.service_minutes||0;const leave=`${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;return `<tr><td>${idx+1}</td><td>抵達 ${arrival}<br>離開 ${leave}</td><td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}</td><td>${esc(itemText(r.items))}</td><td>${r.service_minutes||0} 分鐘</td><td>${esc(r.requested_period)}<br>${esc(r.constraint_type)}</td></tr>`}).join('');
 };
 
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='pickup')renderPickup()});
-$('#saveSettings').onclick=()=>{localStorage.setItem('deliveryPin',$('#pinInput').value);toast('PIN 已儲存');load()};
-$('#date').value=$('#pickupDate').value=$('#planDate').value=localDate();$('#pinInput').value=pin();syncTime();
+$('#date').value=$('#pickupDate').value=$('#planDate').value=localDate();syncTime();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
 </script>
