@@ -448,6 +448,83 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 .management-row{display:grid;grid-template-columns:150px minmax(220px,1fr) 150px 150px 130px;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #D8CEBF}.management-row.header{font-weight:900;background:#E5D2B8;border-radius:10px}.management-order{font-weight:900;color:#725C3A;word-break:break-all}.order-number{font-weight:900;color:#725C3A;word-break:break-all}
 @media(max-width:900px){.management-row{grid-template-columns:1fr}.management-row.header{display:none}}
 
+
+/* V10.1 */
+.sunday-cell{background:repeating-linear-gradient(135deg,#E3DFD8,#E3DFD8 10px,#EEEAE4 10px,#EEEAE4 20px)!important;color:#8A7B68}
+.sunday-label{margin:8px 0;padding:8px;border-radius:10px;background:#D4CFC6;color:#725C3A;font-weight:900;text-align:center;font-size:11px}
+.task-onsite{background:#E7DDF2;color:#6D4C7D}
+.pickup-location-group{margin-top:10px;border-radius:12px;background:#F4EEE4;overflow:hidden}.pickup-location-title{padding:9px 11px;background:#725C3A;color:#fff;font-weight:900}.pickup-location-items{padding:4px 11px 9px}.pickup-location-item{padding:8px 0;border-bottom:1px dashed #CFC4B4;line-height:1.5}.pickup-location-item:last-child{border-bottom:0}
+.route-time-edit{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.route-time-edit input{width:125px}.excel-btn{background:#556B49!important}.order-preview{margin-top:5px;padding:7px 9px;border-radius:9px;background:#E5D2B8;color:#725C3A;font-size:12px;font-weight:900}
+
+
+/* V10.2：角色模式、搜尋、自動更新 */
+.header-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.role-control{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:12px;
+  background:rgba(255,255,255,.42);
+}
+.role-control label{margin:0;font-size:12px;font-weight:900}
+.role-control select{min-width:110px;padding:7px 9px}
+.search-result-note{
+  padding:8px 10px;
+  border-radius:10px;
+  background:#E5D2B8;
+  color:#725C3A;
+  font-weight:900;
+  margin-top:8px;
+}
+.full-order-number{
+  margin:6px 0;
+  padding:7px 9px;
+  border-radius:9px;
+  background:#E5D2B8;
+  color:#725C3A;
+  font-weight:900;
+  word-break:break-all;
+}
+.full-address{
+  margin-top:5px;
+  font-weight:800;
+  line-height:1.5;
+}
+.kpi-progress{
+  grid-column:1/-1;
+  padding:12px;
+  border-radius:13px;
+  background:#F4EEE4;
+}
+.kpi-progress-track{
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  background:#D8CEBF;
+  margin-top:8px;
+}
+.kpi-progress-fill{
+  height:100%;
+  background:#809671;
+  transition:width .25s ease;
+}
+body[data-role="warehouse"] [data-role-hidden~="warehouse"],
+body[data-role="logistics"] [data-role-hidden~="logistics"]{
+  display:none!important;
+}
+@media(max-width:780px){
+  .header-row{align-items:flex-start}
+  .role-control{width:100%;justify-content:space-between}
+  .role-control select{flex:1}
+}
+
 @media(max-width:780px){
   .workorder-amounts{grid-template-columns:1fr}
   .workorder-toolbar>div{min-width:100%;width:100%}
@@ -478,19 +555,29 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V10 流程最佳化版</div></div></header>
+<header><div class="wrap header-row">
+<div><h1>裏物傢俱配送管理平台</h1><div class="sub">Delivery Management Platform｜V10.2 角色與搜尋優化版</div></div>
+<div class="role-control">
+<label for="roleMode">目前模式</label>
+<select id="roleMode">
+<option value="designer">家配師</option>
+<option value="warehouse">倉管</option>
+<option value="logistics">物流</option>
+</select>
+</div>
+</div></header>
 <main class="wrap">
 <div class="tabs">
-<button class="tab active" data-tab="dashboard">今日配送</button>
-<button class="tab" data-tab="form">新增配送</button>
+<button class="tab active" data-tab="dashboard" data-role-hidden="warehouse logistics">今日配送</button>
+<button class="tab" data-tab="form" data-role-hidden="warehouse logistics">新增配送</button>
 <button class="tab" data-tab="calendar">配送月曆</button>
-<button class="tab" data-tab="list">配送清單</button>
+<button class="tab" data-tab="list" data-role-hidden="logistics">配送清單</button>
 <button class="tab" data-tab="pickup">撿貨表</button>
-<button class="tab" data-tab="routePlan">每日路線</button>
-<button class="tab" data-tab="driver">司機模式</button>
-<button class="tab" data-tab="blocks">禁排設定</button>
-<button class="tab" data-tab="workorders">管理中心</button>
-<button class="tab" data-tab="settings">系統設定</button>
+<button class="tab" data-tab="routePlan" data-role-hidden="logistics">每日路線</button>
+<button class="tab" data-tab="driver" data-role-hidden="warehouse">司機模式</button>
+<button class="tab" data-tab="blocks" data-role-hidden="logistics">禁排設定</button>
+<button class="tab" data-tab="workorders" data-role-hidden="warehouse logistics">管理中心</button>
+<button class="tab" data-tab="settings" data-role-hidden="warehouse logistics">系統設定</button>
 </div>
 
 <section id="dashboard" class="panel active">
@@ -509,8 +596,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div><label>限制強度</label><select id="constraintType"><option value="優先條件">優先條件（盡量符合）</option><option value="硬性限制">硬性限制（必須符合）</option></select></div>
 <div id="earliestWrap" style="display:none"><label>最早可抵達</label><input id="earliestTime" type="time"></div>
 <div id="latestWrap" style="display:none"><label>最晚可抵達</label><input id="latestTime" type="time"></div>
-<div><label>客戶姓名 *</label><input id="customerName" placeholder="例如：林俊甫" required></div>
-<div><label>訂單編號 *</label><input id="orderNumber" placeholder="例如：LTi115071601林俊甫" required></div>
+<div><label>訂單編號 *</label><input id="orderNumber" placeholder="例如：LTi115071601林俊甫" required><div id="orderPreview" class="order-preview">月曆顯示：請輸入訂單編號</div></div>
 <div class="full"><label>配送地址 *</label><input id="address" placeholder="請填寫完整地址" required></div>
 <div><label>客戶電話</label><input id="phone" type="tel"></div>
 <div><label>預估卸貨及組裝所需時間（分鐘）*</label><input id="serviceMinutes" type="number" min="0" step="5" value="30" required><div class="help">系統會把這個時間加到抵達時間，推算下一站。</div></div>
@@ -524,6 +610,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
   <label class="task-check"><input id="taskNew" type="checkbox" checked> 新傢俱配送</label>
   <label class="task-check"><input id="taskMoving" type="checkbox"> 搬傢俱</label>
   <label class="task-check"><input id="taskRental" type="checkbox"> 傢俱租借</label>
+<label class="task-check"><input id="taskOnsite" type="checkbox"> 補現場</label>
 </div>
 
 <div id="movingPanel" class="task-panel">
@@ -537,6 +624,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
   </div>
 </div>
 
+<div id="onsitePanel" class="task-panel"><h3>補現場內容</h3><div class="grid"><div class="full"><label>補貨地點／門市 *</label><input id="onsiteDestination" placeholder="例如：台南門市"></div><div><label>預估作業時間（分鐘）</label><input id="onsiteMinutes" type="number" min="0" step="5" value="30"></div><div class="full"><label>補貨內容</label><textarea id="onsiteNotes" placeholder="例如：補沙發腳、補抱枕、門市換貨"></textarea></div></div></div>
 <div id="rentalPanel" class="task-panel">
   <h3>傢俱租借內容</h3>
   <div class="grid">
@@ -564,10 +652,11 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 <div class="card">
   <div class="list-filter">
     <div><label>查看配送日期</label><input id="listDate" type="date"></div>
+    <div style="flex:1;min-width:260px"><label>快速搜尋配送清單</label><input id="listSearch" type="search" placeholder="姓名、訂單編號、地址或電話"></div>
     <button class="btn" id="listTodayBtn" type="button">今天</button>
     <button class="btn alt" id="listAllBtn" type="button">顯示全部</button><button class="btn alt" id="listMissingWorkorderBtn" type="button">待補工單</button>
   </div>
-  <div id="listDateTitle" class="list-date-title"></div>
+  <div id="listDateTitle" class="list-date-title"></div><div id="listSearchNote"></div>
   <div class="summary" id="metrics"></div>
 </div>
 <div class="card list">
@@ -668,7 +757,7 @@ textarea{min-height:75px}.help{font-size:12px;color:var(--muted);margin-top:5px}
 
 <section id="workorders" class="panel">
 <div id="workorderLocked" class="workorder-lock"><div class="secure-badge">特定人員專用</div><h2>管理中心</h2><p>此頁包含訂單金額與每月出貨統計，請輸入管理密碼。</p><label>管理密碼</label><input id="workorderPin" type="password"><button class="btn" id="workorderUnlockBtn" type="button" style="margin-top:12px">解鎖管理中心</button></div>
-<div id="workorderContent" style="display:none"><div class="card"><div class="actions" style="justify-content:space-between"><div><span class="secure-badge">特定人員專用</span> <b>每月出貨對帳</b></div><button class="btn alt" id="workorderLockBtn" type="button">鎖定</button></div></div><div class="card"><div class="workorder-toolbar"><div><label>統計月份</label><input id="workorderMonth" type="month"></div><button class="btn" id="workorderRefreshBtn" type="button">重新整理</button></div><div id="workorderMetrics" class="summary"></div><div id="workorderList" style="margin-top:14px"></div></div></div>
+<div id="workorderContent" style="display:none"><div class="card"><div class="actions" style="justify-content:space-between"><div><span class="secure-badge">特定人員專用</span> <b>每月出貨對帳</b></div><button class="btn alt" id="workorderLockBtn" type="button">鎖定</button></div></div><div class="card"><div class="workorder-toolbar"><div><label>統計月份</label><input id="workorderMonth" type="month"></div><button class="btn" id="workorderRefreshBtn" type="button">重新整理</button><button class="btn excel-btn" id="exportExcelBtn" type="button">匯出 Excel</button></div><div id="workorderMetrics" class="summary"></div><div id="workorderList" style="margin-top:14px"></div></div></div>
 </section>
 
 <section id="settings" class="panel"><div class="card"><h2>固定撿貨地點</h2>
@@ -695,6 +784,7 @@ let products=[],locations=[],rows=[],blocks=[],routeEvents=[],routePlans=[],work
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const headers=()=>({'Content-Type':'application/json'});
 const localDate=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+function updateOrderPreview(){const p=parseOrderNumber($('#orderNumber')?.value);const el=$('#orderPreview');if(el)el.textContent=p.display?`月曆顯示：${p.display}`:'月曆顯示：訂單編號需包含前三碼英文與客戶姓名'}
 function toast(msg){let t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 
 window.openNoteModal=id=>{
@@ -752,15 +842,18 @@ function resetForm(){
   $('#saveBtn').textContent='儲存配送安排';
   $('#cancelEdit').style.display='none';
   $('#editModeBanner').style.display='none';
-  $('#date').value=localDate();
+  $('#orderNumber').addEventListener('input',updateOrderPreview);
+$('#date').value=localDate();
   $('#serviceMinutes').value=30;
   $('#taskNew').checked=true;
   $('#taskMoving').checked=false;
   $('#taskRental').checked=false;
+  $('#taskOnsite').checked=false;
   syncTime();
   syncTaskPanels();
   initProductPicker();
   updateDateBlockWarning();
+  updateOrderPreview();
 }
 $('#cancelEdit').onclick=resetForm;
 $('#clearScheduleBtn').onclick=resetForm;
@@ -768,9 +861,11 @@ $('#clearScheduleBtn').onclick=resetForm;
 function syncTaskPanels(){
   $('#movingPanel').classList.toggle('show',$('#taskMoving').checked);
   $('#rentalPanel').classList.toggle('show',$('#taskRental').checked);
+  $('#onsitePanel').classList.toggle('show',$('#taskOnsite').checked);
 }
 $('#taskMoving').onchange=syncTaskPanels;
 $('#taskRental').onchange=syncTaskPanels;
+$('#taskOnsite').onchange=syncTaskPanels;
 
 function collectTasks(){
   const tasks=[];
@@ -787,6 +882,7 @@ function collectTasks(){
       notes:[`拆裝：${$('#movingAssembly').value}`,$('#movingNotes').value.trim()].filter(Boolean).join('｜')||null
     });
   }
+  if($('#taskOnsite').checked){if(!$('#onsiteDestination').value.trim())throw new Error('補現場請填寫補貨地點');tasks.push({task_type:'onsite_restock',task_label:'補現場',destination_address:$('#onsiteDestination').value.trim(),service_minutes:+$('#onsiteMinutes').value||0,details:null,notes:$('#onsiteNotes').value.trim()||null})}
   if($('#taskRental').checked){
     const phase=$('#rentalPhase').value;
     tasks.push({
@@ -807,6 +903,7 @@ function taskBadgeClass(type){
   if(type==='moving')return 'task-moving';
   if(type==='rental_delivery')return 'task-rental-delivery';
   if(type==='rental_pickup')return 'task-rental-pickup';
+  if(type==='onsite_restock')return 'task-onsite';
   return 'task-new';
 }
 function taskBadges(tasks){
@@ -817,6 +914,7 @@ function taskSummary(tasks){
     if(t.task_type==='moving')return `搬傢俱→${t.destination_address}${t.details?`｜${t.details}`:''}`;
     if(t.task_type==='rental_delivery')return `租借送達${t.rental_return_date?`｜預計${t.rental_return_date}取回`:''}`;
     if(t.task_type==='rental_pickup')return '租借取回';
+    if(t.task_type==='onsite_restock')return `補現場→${t.destination_address||''}`;
     return '新傢俱配送';
   }).join('；');
 }
@@ -886,13 +984,8 @@ function districtOf(address){
   const m2=a.match(/([一-鿿]{1,5}(?:區|鄉|鎮|市))/);
   return m2?m2[1]:'未辨識地區';
 }
-function displayName(r){
-  const order=String(r.order_number||'').trim();
-  const prefix=(order.match(/^[A-Za-z]{3}/)||[''])[0];
-  const orderName=(order.match(/[\u4e00-\u9fff·]+$/)||[''])[0];
-  const customer=String(r.customer_name||'').replace(/^[A-Za-z]{2,3}\s*/,'').trim();
-  return `${prefix}${orderName||customer}`.trim()||customer||order;
-}
+function parseOrderNumber(orderNumber){const order=String(orderNumber||'').trim();const prefix=(order.match(/^[A-Za-z]{3}/)||[''])[0];const customerName=(order.match(/[\u4e00-\u9fff·]+$/)||[''])[0];return{order,prefix,customerName,display:`${prefix}${customerName}`.trim()}}
+function displayName(r){const p=parseOrderNumber(r.order_number);return p.display||r.customer_name||r.order_number||''}
 
 function routeEventsForDate(date){
   return routeEvents
@@ -1039,6 +1132,8 @@ window.suggestAdjusted=id=>{const original=Number($(`#orig-${id}`).value||0),adj
 window.saveManagement=async id=>{try{await workorderApi('/api/v10/management',{method:'PUT',body:JSON.stringify({delivery_id:id,original_amount:Number($(`#orig-${id}`).value||0),adjusted_amount:Number($(`#adj-${id}`).value||0),reconciled:$(`#rec-${id}`).checked})});toast('對帳資料已儲存');await loadWorkorders()}catch(e){toast(e.message)}};
 $('#workorderUnlockBtn').onclick=async()=>{localStorage.setItem('workorderPin',$('#workorderPin').value);try{await loadWorkorders();$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block';toast('管理中心已解鎖')}catch(e){localStorage.removeItem('workorderPin');toast(e.message)}};
 $('#workorderLockBtn').onclick=()=>{localStorage.removeItem('workorderPin');$('#workorderContent').style.display='none';$('#workorderLocked').style.display='block';$('#workorderPin').value=''};
+function exportManagementExcel(){if(!workorders.length){toast('此月份沒有可匯出的資料');return}const month=$('#workorderMonth').value||localDate().slice(0,7),body=workorders.map(w=>`<tr><td>${esc(w.delivery_date)}</td><td>${esc(w.order_number||'')}</td><td>${Number(w.original_amount||0)}</td><td>${Number(w.adjusted_amount||0)}</td><td>${w.reconciled?'已對帳':'未對帳'}</td></tr>`).join(''),ot=workorders.reduce((s,w)=>s+Number(w.original_amount||0),0),at=workorders.reduce((s,w)=>s+Number(w.adjusted_amount||0),0),content=`<html><head><meta charset="UTF-8"></head><body><table border="1"><tr><th colspan="5">${month} 出貨對帳表</th></tr><tr><th>配送日期</th><th>訂單編號</th><th>調整前金額</th><th>調整後金額</th><th>對帳狀態</th></tr>${body}<tr><th colspan="2">合計</th><th>${ot}</th><th>${at}</th><th></th></tr></table></body></html>`,blob=new Blob(['\ufeff'+content],{type:'application/vnd.ms-excel;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${month}_出貨對帳表.xls`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('#exportExcelBtn').onclick=exportManagementExcel;
 $('#workorderRefreshBtn').onclick=()=>loadWorkorders().catch(e=>toast(e.message));$('#workorderMonth').onchange=()=>loadWorkorders().catch(e=>toast(e.message));
 
 function renderAll(){renderDashboard();renderCalendar();renderList();renderPickup();renderBlocks();renderRoutePlan();renderDriverMode();updateDateBlockWarning()}
@@ -1047,6 +1142,9 @@ $('#scheduleForm').onsubmit=async e=>{
   e.preventDefault();
   const items=collectItems();if(!items.length)return toast('請至少勾選一個商品');
   let tasks;try{tasks=collectTasks()}catch(err){return toast(err.message)}
+  const parsedOrder=parseOrderNumber($('#orderNumber').value);
+  if(!parsedOrder.prefix||parsedOrder.prefix.length!==3||!parsedOrder.customerName)return toast('訂單編號需包含前三碼英文與尾端客戶姓名');
+  if(new Date($('#date').value+'T12:00:00').getDay()===0)return toast('星期日固定不安排配送，請改選其他日期');
   const draftForMorning={
     requested_period:$('#timeSlot').value,
     constraint_type:$('#constraintType').value,
@@ -1067,7 +1165,7 @@ $('#scheduleForm').onsubmit=async e=>{
     constraint_type:$('#constraintType').value,
     earliest_time:$('#earliestTime').value||null,
     latest_time:$('#latestTime').value||null,
-    customer_name:$('#customerName').value.trim(),
+    customer_name:parseOrderNumber($('#orderNumber').value).customerName,
     customer_phone:$('#phone').value.trim(),
     delivery_address:$('#address').value.trim(),
     order_number:$('#orderNumber').value.trim(),
@@ -1094,10 +1192,30 @@ function dateString(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function renderDashboard(){
-  const today=localDate(),arr=dayRows(today);
+  const today=localDate();
+  const arr=dayRows(today);
+  const total=arr.length;
+  const missingWorkorders=arr.filter(r=>!r.work_order_sent).length;
+  const waitingTime=arr.filter((r,index)=>index>0&&!r.estimated_arrival).length;
+  const completed=arr.filter(r=>r.status==='已完成').length;
+  const completionRate=total?Math.round(completed/total*100):0;
+
   $('#todayTitle').textContent=`今日配送｜${today.replaceAll('-','/')}`;
-  $('#todayMetrics').innerHTML=[['今日站數',arr.length],['待確認',arr.filter(r=>r.status==='待確認').length],['待補工單',arr.filter(r=>!r.work_order_sent).length],['已完成',arr.filter(r=>r.status==='已完成').length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
-  $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}"><div class="today-main">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))} ${completedMark(r)} ${missingWorkorderMark(r)}</div>${taskBadges(r.tasks)}<div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div></div>`).join(''):'今天尚無配送安排';
+  $('#todayMetrics').innerHTML=[
+    ['今日配送站數',total],
+    ['待補工單',missingWorkorders],
+    ['待安排時間',waitingTime],
+    ['已完成配送',completed]
+  ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('')+
+  `<div class="kpi-progress"><b>今日完成率：${completionRate}%</b>
+    <div class="kpi-progress-track"><div class="kpi-progress-fill" style="width:${completionRate}%"></div></div>
+  </div>`;
+
+  $('#todayDeliveries').innerHTML=arr.length?arr.map((r,i)=>`<div class="today-card ${statusClass(r.status)}">
+    <div class="today-main">🚚 第 ${i+1} 站｜${esc(calendarTimeLabel(r,i))}｜${esc(displayName(r))} ${completedMark(r)} ${missingWorkorderMark(r)}</div>
+    ${taskBadges(r.tasks)}
+    <div class="today-meta">${esc(districtOf(r.delivery_address))}｜${esc(compactItemText(r.items))}｜${esc(statusDisplay(r.status))}</div>
+  </div>`).join(''):'今天尚無配送安排';
 }
 
 function renderMobileCalendar(){
@@ -1138,9 +1256,9 @@ function renderCalendar(){
   for(let i=0;i<42;i++){
     const d=new Date(start);d.setDate(start.getDate()+i);
     const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const arr=dayRows(ds);
+    const arr=d.getDay()===0?[]:dayRows(ds);
     const blocked=blocksForDate(ds).length>0,allDay=hasAllDayBlock(ds);
-    html+=`<div class="day ${d.getMonth()!==m?'other':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''}"><div class="dateNo">${d.getDate()}</div>${calendarBlockHtml(ds,false)}${reloadMarkerHtml(ds,0,false)}`;
+    const sunday=d.getDay()===0;html+=`<div class="day ${d.getMonth()!==m?'other':''} ${blocked?'has-block':''} ${allDay?'blocked-all-day':''} ${sunday?'sunday-cell':''}"><div class="dateNo">${d.getDate()}</div>${sunday?'<div class="sunday-label">🌿 週日休息<br>不安排配送</div>':calendarBlockHtml(ds,false)+reloadMarkerHtml(ds,0,false)}`;
     for(let s=0;s<6;s++){
       const r=arr[s];
       html+=r?`<div class="slot filled ${statusClass(r.status)}">
@@ -1161,15 +1279,64 @@ $('#nextMonth').onclick=()=>{currentMonth=new Date(currentMonth.getFullYear(),cu
 
 let listOnlyMissingWorkorder=false;
 function renderList(){
- const selected=$('#listDate')?.value||''; let visible=selected?rows.filter(r=>r.delivery_date===selected):rows;
- if(listOnlyMissingWorkorder)visible=visible.filter(r=>!r.work_order_sent&&r.status!=='已取消');
- $('#listDateTitle').textContent=listOnlyMissingWorkorder?'待補工單配送清單':selected?`${selected} 配送清單`:'全部日期配送清單';
- $('#metrics').innerHTML=[['配送站數',visible.length],['待確認',visible.filter(r=>r.status==='待確認').length],['已確認',visible.filter(r=>r.status==='已確認').length],['待補工單',visible.filter(r=>!r.work_order_sent).length]].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
- $('#tbody').innerHTML=visible.map(r=>`<tr class="${r.status==='已完成'?'completed-row':''}"><td><strong style="font-size:16px">${esc(r.delivery_date)}</strong><br>第 ${r.delivery_order||'-'} 站<br>${esc(calendarTimeLabel(r,Math.max(0,(r.delivery_order||1)-1)))}</td><td><b>${esc(displayName(r))}</b> ${completedMark(r)} ${missingWorkorderMark(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}${noteButton(r)}</td><td><div class="order-number">${esc(r.order_number||'未填訂單編號')}</div>${taskBadges(r.tasks)}</td><td>${pickupGroupHtml(r.items)}</td><td>${r.service_minutes||0} 分鐘</td><td>${r.status==='已完成'?'<span class="completed-label">✓ 已完成配送</span>':`<select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">${['待確認','已確認','已取消'].map(x=>`<option value="${x}" ${x===r.status?'selected':''}>${x}</option>`).join('')}</select>`}</td><td><div class="actions"><button class="btn alt" onclick="editRow('${r.id}')">編輯</button><button class="btn danger" onclick="deleteRow('${r.id}')">刪除</button></div></td></tr>`).join('')||'<tr><td colspan="7">目前沒有符合條件的配送資料</td></tr>';
+  const selected=$('#listDate')?.value||'';
+  const keyword=String($('#listSearch')?.value||'').trim().toLowerCase();
+
+  // 有搜尋字詞時跨全部日期搜尋；清除搜尋後恢復日期篩選。
+  let visible=keyword?rows:(selected?rows.filter(r=>r.delivery_date===selected):rows);
+
+  if(keyword){
+    visible=visible.filter(r=>{
+      const searchable=[
+        r.order_number,
+        r.customer_name,
+        r.delivery_address,
+        r.customer_phone,
+        displayName(r)
+      ].join(' ').toLowerCase();
+      return searchable.includes(keyword);
+    });
+  }
+
+  if(listOnlyMissingWorkorder){
+    visible=visible.filter(r=>!r.work_order_sent&&r.status!=='已取消');
+  }
+
+  $('#listDateTitle').textContent=keyword
+    ? `搜尋「${$('#listSearch').value.trim()}」`
+    : listOnlyMissingWorkorder
+      ? '待補工單配送清單'
+      : selected?`${selected} 配送清單`:'全部日期配送清單';
+
+  $('#listSearchNote').innerHTML=keyword
+    ? `<div class="search-result-note">共找到 ${visible.length} 筆配送資料</div>`
+    : '';
+
+  $('#metrics').innerHTML=[
+    ['配送站數',visible.length],
+    ['待確認',visible.filter(r=>r.status==='待確認').length],
+    ['已確認',visible.filter(r=>r.status==='已確認').length],
+    ['待補工單',visible.filter(r=>!r.work_order_sent).length]
+  ].map(x=>`<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join('');
+
+  $('#tbody').innerHTML=visible.map(r=>`<tr class="${r.status==='已完成'?'completed-row':''}">
+    <td><strong style="font-size:16px">${esc(r.delivery_date)}</strong><br>第 ${r.delivery_order||'-'} 站<br>${esc(calendarTimeLabel(r,Math.max(0,(r.delivery_order||1)-1)))}</td>
+    <td><b>${esc(displayName(r))}</b> ${completedMark(r)} ${missingWorkorderMark(r)}<br><span class="district-tag">${esc(districtOf(r.delivery_address))}</span><br>${esc(r.delivery_address)}<br>${esc(r.customer_phone||'')}${noteButton(r)}</td>
+    <td><div class="order-number">${esc(r.order_number||'未填訂單編號')}</div>${taskBadges(r.tasks)}</td>
+    <td>${pickupGroupHtml(r.items)}</td>
+    <td>${r.service_minutes||0} 分鐘</td>
+    <td>${r.status==='已完成'
+      ?'<span class="completed-label">✓ 已完成配送</span>'
+      :`<select class="status-select" data-id="${r.id}" onchange="quickStatus(this)">
+        ${['待確認','已確認','已取消'].map(x=>`<option value="${x}" ${x===r.status?'selected':''}>${x}</option>`).join('')}
+      </select>`}</td>
+    <td><div class="actions"><button class="btn alt" onclick="editRow('${r.id}')">編輯</button><button class="btn danger" onclick="deleteRow('${r.id}')">刪除</button></div></td>
+  </tr>`).join('')||'<tr><td colspan="7">目前沒有符合條件的配送資料</td></tr>';
 }
 $('#listDate').onchange=()=>{listOnlyMissingWorkorder=false;renderList()};
-$('#listTodayBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listDate').value=localDate();renderList()};
-$('#listAllBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listDate').value='';renderList()};
+$('#listSearch').oninput=renderList;
+$('#listTodayBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listSearch').value='';$('#listDate').value=localDate();renderList()};
+$('#listAllBtn').onclick=()=>{listOnlyMissingWorkorder=false;$('#listSearch').value='';$('#listDate').value='';renderList()};
 $('#listMissingWorkorderBtn').onclick=()=>{listOnlyMissingWorkorder=true;$('#listDate').value='';renderList()};
 window.quickStatus=async select=>{const id=select.dataset.id,row=rows.find(r=>r.id===id);if(row?.status==='已完成'){toast('已完成配送只能由司機模式還原');renderList();return}const newStatus=select.value,previous=row?.status||'待確認';select.disabled=true;try{const result=await api('/api/v5/schedules',{method:'PATCH',body:JSON.stringify({id,status:newStatus,source:'list'})});if(result.delivery?.status!==newStatus)throw new Error('狀態更新驗證失敗');toast(`狀態已改為：${newStatus}`);await load()}catch(e){select.value=previous;toast(e.message)}finally{select.disabled=false}};
 window.deleteRow=async id=>{if(!confirm('確定刪除這筆配送？'))return;try{await api('/api/v5/schedules',{method:'DELETE',body:JSON.stringify({id})});toast('已刪除');await load()}catch(e){toast(e.message)}}
@@ -1187,7 +1354,6 @@ window.editRow=id=>{
     constraintType:r.constraint_type||'優先條件',
     earliestTime:cleanTime(r.earliest_time),
     latestTime:cleanTime(r.latest_time),
-    customerName:r.customer_name||'',
     phone:r.customer_phone||'',
     address:r.delivery_address||'',
     orderNumber:r.order_number||'',
@@ -1228,11 +1394,13 @@ window.editRow=id=>{
   $('#rentalReturnDate').value='';
   $('#rentalAddress').value='';
   $('#rentalNotes').value='';
+  $('#onsiteDestination').value='';$('#onsiteMinutes').value=30;$('#onsiteNotes').value='';
 
   const taskTypes=new Set((r.tasks||[]).map(t=>t.task_type));
   $('#taskNew').checked=taskTypes.has('new_delivery')||!taskTypes.size;
   $('#taskMoving').checked=taskTypes.has('moving');
   $('#taskRental').checked=taskTypes.has('rental_delivery')||taskTypes.has('rental_pickup');
+  $('#taskOnsite').checked=taskTypes.has('onsite_restock');
 
   const moving=(r.tasks||[]).find(t=>t.task_type==='moving');
   if(moving){
@@ -1245,6 +1413,7 @@ window.editRow=id=>{
     $('#movingNotes').value=noteParts.filter(x=>!x.startsWith('拆裝：')).join('｜');
   }
 
+  const onsite=(r.tasks||[]).find(t=>t.task_type==='onsite_restock');if(onsite){$('#onsiteDestination').value=onsite.destination_address||'';$('#onsiteMinutes').value=onsite.service_minutes||0;$('#onsiteNotes').value=onsite.notes||''}
   const rental=(r.tasks||[]).find(t=>t.task_type==='rental_delivery'||t.task_type==='rental_pickup');
   if(rental){
     $('#rentalPhase').value=rental.task_type;
@@ -1265,25 +1434,9 @@ window.editRow=id=>{
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
-function renderPickup(){
-  const ds=$('#pickupDate').value||localDate();
-  const arr=dayRows(ds);
-  $('#pickupContent').innerHTML=arr.length?arr.map((r,idx)=>{
-    const items=(r.items||[]).map(i=>{
-      const location=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');
-      const detail=i.item_notes?`｜${i.item_notes}`:'';
-      return `<div class="station-pick-item">
-        <b>${esc(i.product_name)} × ${i.quantity}</b>${detail?esc(detail):''}
-        <span class="pick-location">撿貨：${esc(location)}</span>
-      </div>`;
-    }).join('');
-    return `<div class="station-pick-card">
-      <div class="station-pick-title">第 ${r.delivery_order||idx+1} 站｜${esc(displayName(r))}｜${esc(districtOf(r.delivery_address))}</div>
-      ${items||'<div>無商品資料</div>'}
-      ${r.notes?`<div class="delivery-note">📝 ${esc(r.notes)}</div>`:''}
-    </div>`;
-  }).join(''):'此日期尚無撿貨資料';
-}
+function renderPickup(){const ds=$('#pickupDate').value||localDate(),arr=dayRows(ds);$('#pickupContent').innerHTML=arr.length?arr.map((r,idx)=>{const groups={};(r.items||[]).forEach(i=>{const location=i.pickup_location_name+(i.custom_pickup_address?`｜${i.custom_pickup_address}`:'');(groups[location]??=[]).push(i)});const groupHtml=Object.entries(groups).map(([location,items])=>`<div class="pickup-location-group"><div class="pickup-location-title">撿貨：${esc(location)}</div><div class="pickup-location-items">${items.map(i=>`<div class="pickup-location-item"><b>${esc(i.product_name)} × ${i.quantity}</b>${i.item_notes?`｜${esc(i.item_notes)}`:''}</div>`).join('')}</div></div>`).join('');return `<div class="station-pick-card"><div class="station-pick-title">第 ${r.delivery_order||idx+1} 站｜${esc(displayName(r))}</div>
+<div class="full-order-number">訂單編號：${esc(r.order_number||'')}</div>
+<div class="full-address">配送地址：${esc(r.delivery_address||'')}</div>${groupHtml||'<div>無商品資料</div>'}${r.notes?`<div class="delivery-note">📝 ${esc(r.notes)}</div>`:''}</div>`}).join(''):'此日期尚無撿貨資料'}
 $('#refreshPickup').onclick=renderPickup;$('#pickupDate').onchange=renderPickup;
 
 
@@ -1357,7 +1510,7 @@ function renderRoutePlan(){
     if(idx===0)mins+=r.service_minutes||0;
     routeRows.push(`<tr>
       <td>第 ${idx+1} 站</td>
-      <td><div class="manual-time"><input type="time" value="${r.estimated_arrival?cleanTime(r.estimated_arrival):''}" id="arrival-${r.id}"><button class="btn alt" onclick="saveArrivalTime('${r.id}')">儲存</button></div><small>${r.estimated_arrival?'已設定':'未設定則顯示待通知'}</small></td>
+      <td><div class="route-time-edit"><input type="time" id="arrival-${r.id}" value="${r.estimated_arrival?cleanTime(r.estimated_arrival):''}"><button class="btn alt" type="button" onclick="saveArrivalTime('${r.id}')">儲存時間</button></div><small>${r.estimated_arrival?`已設定 ${esc(cleanTime(r.estimated_arrival))}`:'未設定：月曆顯示待通知'}</small></td>
       <td><b>${esc(displayName(r))}</b><br>${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}${r.notes?`<div class="delivery-note">📝 ${esc(r.notes)}</div>`:''}</td>
       <td>${esc(itemText(r.items))}</td>
       <td>${r.service_minutes||0} 分鐘</td>
@@ -1465,10 +1618,12 @@ function renderDriverMode(){
     timeline.push(`<div class="driver-stop ${klass}">
       ${r.id===next?.id?'<span class="driver-next-label">下一站</span>':''}
       ${taskBadges(r.tasks)}<div class="driver-stop-title">${r.status==='已完成'?'✓ ':''}第 ${index+1} 站｜${esc(displayName(r))}</div>
+      <div class="full-order-number">訂單編號：${esc(r.order_number||'')}</div>
       <div class="driver-stop-time">${esc(calendarTimeLabel(r,index))}</div>
       <div class="driver-stop-detail">
-        ${esc(districtOf(r.delivery_address))}｜${esc(r.delivery_address)}<br>
-        ${esc(itemText(r.items))}<br>
+        <b>配送地址：</b>${esc(r.delivery_address||'')}<br>
+        ${r.customer_phone?`<b>聯絡電話：</b>${esc(r.customer_phone)}<br>`:''}
+        <b>商品：</b>${esc(itemText(r.items))}<br>
         卸貨組裝 ${r.service_minutes||0} 分鐘
       </div>
       ${r.notes?`<div class="driver-note">📝 配送備註：${esc(r.notes)}</div>`:''}
@@ -1518,8 +1673,64 @@ window.saveArrivalTime=async id=>{const value=$(`#arrival-${id}`).value||null;tr
 $('#planBtn').onclick=renderRoutePlan;
 $('#planDate').onchange=()=>{syncFirstArrivalInput();renderRoutePlan()};
 
+
+const ROLE_TABS={
+  designer:['dashboard','form','calendar','list','pickup','routePlan','driver','blocks','workorders','settings'],
+  warehouse:['calendar','list','pickup','routePlan','blocks'],
+  logistics:['calendar','pickup','driver']
+};
+function applyRoleMode(){
+  const role=$('#roleMode')?.value||'designer';
+  localStorage.setItem('platformRole',role);
+  document.body.dataset.role=role;
+
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.style.display=ROLE_TABS[role].includes(tab.dataset.tab)?'':'none';
+  });
+
+  const activePanel=document.querySelector('.panel.active');
+  if(activePanel&&!ROLE_TABS[role].includes(activePanel.id)){
+    const firstTab=[...document.querySelectorAll('.tab')].find(tab=>tab.style.display!=='none');
+    firstTab?.click();
+  }
+}
+$('#roleMode').value=localStorage.getItem('platformRole')||'designer';
+$('#roleMode').onchange=applyRoleMode;
+
+
+const APP_VERSION='10.2.0';
+function isEditingData(){
+  const editId=$('#editingId')?.value;
+  const formActive=$('#form')?.classList.contains('active');
+  const dirty=formActive&&(
+    editId||
+    $('#orderNumber')?.value.trim()||
+    $('#address')?.value.trim()||
+    $('#note')?.value.trim()
+  );
+  return !!dirty;
+}
+async function checkAppVersion(){
+  try{
+    const response=await fetch(`/version.json?t=${Date.now()}`,{cache:'no-store'});
+    if(!response.ok)return;
+    const latest=(await response.json()).version;
+    const seen=sessionStorage.getItem('appVersion');
+    if(!seen){
+      sessionStorage.setItem('appVersion',latest);
+      return;
+    }
+    if(latest!==seen&&!isEditingData()){
+      sessionStorage.setItem('appVersion',latest);
+      location.reload();
+    }
+  }catch(_){}
+}
+setInterval(checkAppVersion,60000);
+window.addEventListener('focus',checkAppVersion);
+
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');if(b.dataset.tab==='form'&&!$('#editingId').value)resetForm();if(b.dataset.tab==='pickup')renderPickup();if(b.dataset.tab==='blocks')renderBlocks();if(b.dataset.tab==='routePlan'){syncFirstArrivalInput();renderRoutePlan()}if(b.dataset.tab==='driver')renderDriverMode();if(b.dataset.tab==='list')renderList();if(b.dataset.tab==='workorders'&&workorderPin()){loadWorkorders().then(()=>{$('#workorderLocked').style.display='none';$('#workorderContent').style.display='block'}).catch(()=>{})}});
-$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=localDate();$('#workorderMonth').value=localDate().slice(0,7);syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();
+$('#date').value=$('#pickupDate').value=$('#planDate').value=$('#blockDate').value=$('#driverDate').value=$('#listDate').value=localDate();$('#workorderMonth').value=localDate().slice(0,7);syncTime();syncBlockTime();syncFirstArrivalInput();syncTaskPanels();applyRoleMode();checkAppVersion();
 
 (async()=>{try{await loadConfig();await load()}catch(e){toast(e.message)}})();
 </script>

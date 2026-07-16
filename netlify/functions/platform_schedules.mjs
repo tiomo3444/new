@@ -172,6 +172,11 @@ export default async req => {
       for (const field of ["delivery_date", "customer_name", "delivery_address", "order_number"]) {
         if (!String(body[field] || "").trim()) return response({ error: `缺少欄位：${field}` }, 400);
       }
+      const orderNumber = String(body.order_number || "").trim();
+      const customerName = (orderNumber.match(/[\u4e00-\u9fff·]+$/) || [""])[0];
+      const orderPrefix = (orderNumber.match(/^[A-Za-z]{3}/) || [""])[0];
+      if (!orderPrefix || orderPrefix.length !== 3 || !customerName) return response({ error: "訂單編號需包含前三碼英文與尾端客戶姓名" }, 400);
+      if (new Date(`${body.delivery_date}T12:00:00+08:00`).getDay() === 0) return response({ error: "星期日固定不安排配送" }, 400);
       if (!Array.isArray(body.items) || !body.items.length) {
         return response({ error: "請至少選擇一個商品" }, 400);
       }
@@ -186,7 +191,7 @@ export default async req => {
 
       const payload = {
         customer_id: customerId,
-        customer_name_snapshot: body.customer_name,
+        customer_name_snapshot: customerName,
         customer_phone_snapshot: body.customer_phone || null,
         delivery_address_snapshot: body.delivery_address,
         sales_staff_id: staffId,
@@ -225,6 +230,12 @@ export default async req => {
     }
 
     if (req.method === "PUT") {
+      const orderNumber = String(body.order_number || "").trim();
+      const customerName = (orderNumber.match(/[\u4e00-\u9fff·]+$/) || [""])[0];
+      const orderPrefix = (orderNumber.match(/^[A-Za-z]{3}/) || [""])[0];
+      if (!orderPrefix || orderPrefix.length !== 3 || !customerName) return response({ error: "訂單編號需包含前三碼英文與尾端客戶姓名" }, 400);
+      if (new Date(`${body.delivery_date}T12:00:00+08:00`).getDay() === 0) return response({ error: "星期日固定不安排配送" }, 400);
+
       if (!body.id) return response({ error: "缺少 id" }, 400);
 
       await ensureMorningAvailable(db, body, body.id);
@@ -249,7 +260,7 @@ export default async req => {
       }
 
       const payload = {
-        customer_name_snapshot: body.customer_name,
+        customer_name_snapshot: customerName,
         customer_phone_snapshot: body.customer_phone || null,
         delivery_address_snapshot: body.delivery_address,
         sales_staff_id: staffId,
